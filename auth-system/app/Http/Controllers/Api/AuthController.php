@@ -18,7 +18,10 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::defaults()],
+            'township_id' => 'required|exists:townships,id',
+            'ward_id' => 'required|exists:wards,id',
         ]);
+
 
         if ($validator->fails()) {
             return response()->json([
@@ -34,6 +37,8 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'township_id' => $request->township_id,
+                'ward_id' => $request->ward_id,
             ]);
 
             // Create token for the user

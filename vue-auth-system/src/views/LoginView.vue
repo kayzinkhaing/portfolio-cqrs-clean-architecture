@@ -5,13 +5,14 @@
   
       <LoadingSpinner v-if="isLoading" />
   
-      <form v-else @submit.prevent="handleLogin">
-        <input v-model="form.email" type="email" placeholder="Email" required class="input" />
-        <input v-model="form.password" type="password" placeholder="Password" required class="input" />
+      <form v-else @submit.prevent="handleLogin" class="space-y-4">
+        <BaseInput v-model="form.email" type="email" label="Email" placeholder="Enter your email" required />
   
-        <button type="submit" class="btn">Login</button>
+        <BaseInput v-model="form.password" type="password" label="Password" placeholder="Enter your password" required />
+  
+        <SubmitButton :loading="isLoading" label="Login" />
       </form>
-
+  
       <p v-if="errorMessage" class="text-red-600 mt-2 text-center">{{ errorMessage }}</p>
     </div>
   </div>
@@ -22,6 +23,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import LoadingSpinner from '@/components/LoaderSpinner.vue'
+import BaseInput from '@/components/BaseInput.vue'
+import SubmitButton from '@/components/SubmitButton.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -39,7 +42,7 @@ const handleLogin = async () => {
   isLoading.value = true
   try {
     await auth.loginUser(form.value)
-    router.push('/')  // redirect after login
+    router.push('/') // Redirect after login
   } catch {
     errorMessage.value = auth.error || 'Login failed. Please check your credentials.'
   } finally {

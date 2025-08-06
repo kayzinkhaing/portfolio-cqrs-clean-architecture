@@ -1,12 +1,18 @@
+# Use official Node.js alpine image
 FROM node:20-alpine
 
+# Set working directory inside container
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy all files
 COPY . .
 
-EXPOSE 8080
+# Expose Vite dev server port
+EXPOSE 5173
 
-CMD ["npm", "run", "serve"]
+# Start Vite dev server, accessible externally
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

@@ -38,10 +38,13 @@ services:
     container_name: vue-frontend
     volumes:
       - ../vue-auth-system:/app
+      - /app/node_modules  # Avoid node_modules overwrite by volume
     ports:
-      - "8080:8080"
-    depends_on:
-      - nginx
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Fix for watching files on Windows
+    command: npm run dev -- --host 0.0.0.0
+    # No depends_on needed here unless you want it to wait for laravel/nginx
 
   mysql:
     image: mysql:8.0

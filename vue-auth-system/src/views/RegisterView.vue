@@ -1,205 +1,120 @@
 <template>
-  <div class="register-page">
-    <div v-if="isLoading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Loading data, please wait...</p>
-    </div>
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Register</h2>
 
-    <div v-else>
-      <h2>Register</h2>
-      <form @submit.prevent="handleRegister">
-        <input type="text" v-model="name" placeholder="Name" required />
-        <input type="email" v-model="email" placeholder="Email" required />
-        <input type="password" v-model="password" placeholder="Password" required />
-        <input type="password" v-model="passwordConfirmation" placeholder="Confirm Password" required />
+      <LoadingSpinner v-if="isLoading" />
 
-        <!-- Township Dropdown -->
-        <select v-model="selectedTownshipId" required>
-          <option value="">Select Township</option>
-          <option v-for="township in townships" :key="township.id" :value="township.id">
-            {{ township.name }}
-          </option>
-        </select>
+      <form v-else @submit.prevent="handleRegister">
+        <div class="mb-4">
+          <input v-model="form.name" placeholder="Name" required class="w-full p-2 border border-gray-300 rounded" />
+          <p v-if="errors.name" class="text-red-600 text-sm mt-1">{{ errors.name[0] }}</p>
+        </div>
 
-        <!-- Ward Dropdown -->
-        <select v-model="selectedWardId" required>
-          <option value="">Select Ward</option>
-          <option v-for="ward in filteredWards" :key="ward.id" :value="ward.id">
-            {{ ward.name }}
-          </option>
-        </select>
+        <div class="mb-4">
+          <input v-model="form.email" type="email" placeholder="Email" required
+            class="w-full p-2 border border-gray-300 rounded" />
+          <p v-if="errors.email" class="text-red-600 text-sm mt-1">{{ errors.email[0] }}</p>
+        </div>
 
-        <button type="submit">Register</button>
+        <div class="mb-4">
+          <input v-model="form.password" type="password" placeholder="Password" required
+            class="w-full p-2 border border-gray-300 rounded" />
+          <p v-if="errors.password" class="text-red-600 text-sm mt-1">{{ errors.password[0] }}</p>
+        </div>
+
+        <div class="mb-4">
+          <input v-model="form.password_confirmation" type="password" placeholder="Confirm Password" required
+            class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+
+        <div class="mb-4">
+          <select
+            v-model="form.township_id"
+            required
+            class="w-full p-2 border border-gray-300 rounded bg-white"
+            @change="onTownshipChange"
+          >
+            <option disabled value="">Select Township</option>
+            <option v-for="t in townships" :key="t.id" :value="t.id">{{ t.name }}</option>
+          </select>
+          <p v-if="errors.township_id" class="text-red-600 text-sm mt-1">{{ errors.township_id[0] }}</p>
+        </div>
+
+        <div class="mb-4">
+          <select v-model="form.ward_id" required class="w-full p-2 border border-gray-300 rounded bg-white">
+            <option disabled value="">Select Ward</option>
+            <option v-for="w in filteredWards" :key="w.id" :value="w.id">{{ w.name }}</option>
+          </select>
+          <p v-if="errors.ward_id" class="text-red-600 text-sm mt-1">{{ errors.ward_id[0] }}</p>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
+          Register
+        </button>
       </form>
-
-      <p v-if="message" :class="{ 'error-message': isError, 'success-message': !isError }">
-        {{ message }}
-      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import axios from "axios";
+import { ref, computed, onMounted } from 'vue'
+import { register, getTownships, getWards } from '@/services/api'
+import { useRouter } from 'vue-router'
+import LoadingSpinner from '@/components/LoaderSpinner.vue'
 
-// Form fields
-const name = ref("");
-const email = ref("");
-const password = ref("");
-const passwordConfirmation = ref("");
+const router = useRouter()
+const isLoading = ref(true)
 
-// Dropdown selections
-const selectedTownshipId = ref("");
-const selectedWardId = ref("");
+const form = ref({
+  name: '',
+  email: '',
+  password: '',
+  password_confirmation: '',
+  township_id: '',
+  ward_id: '',
+})
 
-// Data lists
-const townships = ref([]);
-const wards = ref([]);
+const errors = ref({})
+const townships = ref([])
+const wards = ref([])
 
-// UI states
-const isLoading = ref(true);
-const message = ref("");
-const isError = ref(false);
-
-// Computed wards based on township
+// Compute wards filtered by selected township
 const filteredWards = computed(() => {
-  if (!selectedTownshipId.value) return [];
-  return wards.value.filter(ward => ward.township_id === Number(selectedTownshipId.value));
-});
+  if (!form.value.township_id) return []
+  return wards.value.filter(w => w.township_id === form.value.township_id)
+})
 
-// Fetch all townships and wards before form load
-/*const fetchData = async () => {
-  try {
-    const [townshipsRes, wardsRes] = await Promise.all([
-      axios.get("http://127.0.0.1:8000/api/townships"),
-      axios.get("http://127.0.0.1:8000/api/wards")
-    ]);
-    townships.value = townshipsRes.data;
-    wards.value = wardsRes.data;
-  } catch (error) {
-    console.error("Failed to load data:", error);
-  } finally {
-    isLoading.value = false;
+const onTownshipChange = () => {
+  // Reset ward selection if it doesn't belong to new township
+  if (!filteredWards.value.find(w => w.id === form.value.ward_id)) {
+    form.value.ward_id = ''
   }
-};*/
+}
 
-const fetchData = async () => {
+onMounted(async () => {
   try {
-    const res = await axios.get("http://127.0.0.1:8000/api/townships");
-    townships.value = res.data;
-    wards.value = res.data.flatMap(t =>
-      t.wards.map(w => ({
-        ...w,
-        township_id: t.id
-      }))
-    );
-  } catch (error) {
-    console.error("Failed to load data:", error);
+    const [tRes, wRes] = await Promise.all([getTownships(), getWards()])
+    townships.value = tRes.data
+    wards.value = wRes.data
+  } catch (err) {
+    alert('Failed to load data')
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+})
 
 const handleRegister = async () => {
-  message.value = "";
-  isError.value = false;
-
+  errors.value = {}
   try {
-    await axios.post("http://127.0.0.1:8000/api/register", {
-      name: name.value,
-      email: email.value,
-      password: password.value,
-      password_confirmation: passwordConfirmation.value,
-      township_id: selectedTownshipId.value,
-      ward_id: selectedWardId.value,
-    });
-
-    message.value = "Registered successfully!";
-    name.value = email.value = password.value = passwordConfirmation.value = "";
-    selectedTownshipId.value = selectedWardId.value = "";
+    await register(form.value)
+    router.push('/login')
   } catch (err) {
-    isError.value = true;
     if (err.response?.status === 422) {
-      const errors = err.response.data.errors;
-      message.value = Object.values(errors).flat().join("\n");
+      errors.value = err.response.data.errors
     } else {
-      message.value = err.message || "Registration failed.";
+      alert('Registration failed! ' + (err.response?.data?.message || 'Unknown error'))
     }
   }
-};
-
-//onMounted(fetchData);
+}
 </script>
-
-<style scoped>
-.register-page {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 25px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-family: Arial, sans-serif;
-  background-color: #fff;
-}
-
-input,
-select {
-  display: block;
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 10px;
-  box-sizing: border-box;
-  border: 1px solid #aaa;
-  border-radius: 3px;
-  font-size: 1rem;
-}
-
-button {
-  padding: 10px 15px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-  width: 100%;
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
-.error-message {
-  color: #e74c3c;
-  white-space: pre-line;
-  margin-top: 10px;
-}
-
-.success-message {
-  color: #27ae60;
-  margin-top: 10px;
-}
-
-.loading-container {
-  text-align: center;
-  padding: 50px;
-}
-
-.spinner {
-  margin: 0 auto 20px;
-  width: 40px;
-  height: 40px;
-  border: 5px solid #ddd;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

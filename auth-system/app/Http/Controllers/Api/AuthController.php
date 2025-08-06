@@ -8,12 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
+
+    public function profile(Request $request)
+    {
+        return response()->json($request->user());
+    }
     public function register(Request $request)
     {
-        // Validate the request
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -22,17 +27,15 @@ class AuthController extends Controller
             'ward_id' => 'required|exists:wards,id',
         ]);
 
-
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation errors',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         try {
-            // Create the user
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -41,7 +44,6 @@ class AuthController extends Controller
                 'ward_id' => $request->ward_id,
             ]);
 
-            // Create token for the user
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -50,14 +52,14 @@ class AuthController extends Controller
                 'data' => [
                     'user' => $user,
                     'token' => $token,
-                    'token_type' => 'Bearer'
-                ]
+                    'token_type' => 'Bearer',
+                ],
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -73,7 +75,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation errors',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -82,22 +84,43 @@ class AuthController extends Controller
         if (!auth()->attempt($credentials)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Invalid credentials',
             ], 401);
         }
 
         $user = auth()->user();
         $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
                 'user' => $user,
                 'token' => $token,
-                'token_type' => 'Bearer'
-            ]
+                'token_type' => 'Bearer',
+            ],
         ]);
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'township_id' => 'required|exists:townships,id',
+            'ward_id' => 'required|exists:wards,id',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully!',
+            'data' => $user,
+        ]);
+    }
+
 
     public function logout(Request $request)
     {
@@ -105,7 +128,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 }

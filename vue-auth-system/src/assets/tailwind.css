@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.input {
+  @apply w-full p-2 mb-4 border border-gray-300 rounded;
+}
+
+.btn {
+  @apply w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700;
+}

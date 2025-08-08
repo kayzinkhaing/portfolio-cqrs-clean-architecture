@@ -1,12 +1,20 @@
-<script setup>
-import Navbar from '@/components/Navbar.vue'
-</script>
+  <script setup>
+  import Navbar from '@/components/Navbar.vue'
+  import { useAuthStore } from '@/stores/auth'
+  import { onMounted } from 'vue'
 
-<template>
-  <div>
-    <Navbar />
-    <main class="p-6">
-      <router-view />
-    </main>
-  </div>
-</template>
+  const auth = useAuthStore()
+
+  onMounted(() => {
+    auth.initialize()  // starts async fetch but does NOT block rendering
+  })
+  </script>
+
+  <template>
+    <div>
+      <Navbar />
+      <main class="p-6">
+        <router-view />
+      </main>
+    </div>
+  </template>

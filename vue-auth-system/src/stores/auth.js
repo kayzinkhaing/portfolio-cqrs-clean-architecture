@@ -1,12 +1,19 @@
-import { defineStore } from 'pinia'
-import { login, logout, getProfile, register, setAuthToken } from '@/services/api'
+import { defineStore } from "pinia";
+import {
+  login,
+  logout,
+  getProfile,
+  register,
+  setAuthToken,
+} from "@/services/api";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
-    token: localStorage.getItem('token') || '',
+    token: localStorage.getItem("token") || "",
     loading: false,
     error: null,
+    initialized: false, // <-- NEW: to track auth initialization
   }),
 
   getters: {
@@ -15,56 +22,68 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     setToken(token) {
-      this.token = token
-      localStorage.setItem('token', token)
-      setAuthToken(token)
+      this.token = token;
+      localStorage.setItem("token", token);
+      setAuthToken(token);
     },
+
     setUser(user) {
-    this.user = user
-  },
+      this.user = user;
+    },
+
+    async initialize() {
+      if (this.token) {
+        setAuthToken(this.token);
+        await this.fetchUser();
+      }
+      this.initialized = true; // mark as initialized after loading user or no token
+    },
 
     clearAuth() {
-      this.user = null
-      this.token = ''
-      localStorage.removeItem('token')
-      setAuthToken(null)
+      this.user = null;
+      this.token = "";
+      localStorage.removeItem("token");
+      setAuthToken(null);
     },
 
     async loginUser(credentials) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
       try {
-        const res = await login(credentials)
-        this.setToken(res.data.data.token)
-        await this.fetchUser()
+        const res = await login(credentials);
+        this.setToken(res.data.data.token);
+        await this.fetchUser();
       } catch (err) {
-        this.error = err.response?.data?.message || 'Login failed'
-        this.clearAuth()
+        this.error = err.response?.data?.message || "Login failed";
+        this.clearAuth();
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async fetchUser() {
       if (!this.token) {
-        this.clearAuth()
-        return
+        this.clearAuth();
+        this.initialized = true; // mark as initialized even if no token
+        return;
       }
       try {
-        const res = await getProfile()
-        this.user = res.data
+        const res = await getProfile();
+        this.user = res.data;
       } catch {
-        this.clearAuth()
+        this.clearAuth();
+      }finally {
+        this.initialized = true;
       }
     },
 
     async logoutUser() {
       try {
-        await logout()
+        await logout();
       } catch (err) {
-        console.error('Logout failed', err)
+        console.error("Logout failed", err);
       }
-      this.clearAuth()
+      this.clearAuth();
     },
   },
-})
+});

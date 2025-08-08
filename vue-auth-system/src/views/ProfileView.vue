@@ -28,7 +28,7 @@
 import { ref, onMounted } from 'vue'
 import { getProfile, updateProfile, getTownships, getWards } from '@/services/api'
 import { useRouter } from 'vue-router'
-import LoadingSpinner from '@/components/LoaderSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { useAuthStore } from '@/stores/auth'
 
 import BaseInput from '@/components/BaseInput.vue'

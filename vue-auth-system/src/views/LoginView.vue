@@ -22,7 +22,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import LoadingSpinner from '@/components/LoaderSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import SubmitButton from '@/components/SubmitButton.vue'
 

@@ -28,7 +28,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { register, getTownships, getWards } from '@/services/api'
 import { useRouter } from 'vue-router'
-import LoadingSpinner from '@/components/LoaderSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import BaseInput from '@/components/BaseInput.vue'
 import BaseSelect from '@/components/BaseSelect.vue'
 import SubmitButton from '@/components/SubmitButton.vue'

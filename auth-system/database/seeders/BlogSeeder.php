@@ -13,6 +13,12 @@ class BlogSeeder extends Seeder
      */
     public function run(): void
     {
-        Blog::factory()->count(10)->create();
+        $userIds = \App\Models\User::pluck('id')->toArray();
+
+        Blog::factory()
+            ->count(1000)
+            ->create([
+                'user_id' => fn() => fake()->randomElement($userIds),
+            ]);
     }
 }

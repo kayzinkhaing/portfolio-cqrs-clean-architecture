@@ -18,7 +18,7 @@ class BlogController extends Controller
     public function index()
     {
         // Eager load user (author) with only id and name fields
-        $blogs = Blog::with('user:id,name')->latest()->get();
+        $blogs = Blog::with('user:id,name')->latest()->paginate(10);
 
         return response()->json($blogs);
     }

@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Blog;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,15 +10,22 @@ class DatabaseSeeder extends Seeder
      * Seed the application's database.
      */
     public function run(): void
-        {
-            $user = \App\Models\User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
+    {
+        // 1. Seed Townships first
+        $this->call(\Database\Seeders\TownshipSeeder::class);
 
-            \App\Models\Blog::factory(10)->create([
-                'user_id' => $user->id,  // assign this existing user id dynamically
-            ]);
-        }
+        // 2. Seed Wards after townships
+        $this->call(\Database\Seeders\WardSeeder::class);
 
+        // 3. Seed 10,000 Users after wards and townships exist
+        $this->call(\Database\Seeders\UserSeeder::class);
+        $this->call(\Database\Seeders\BlogSeeder::class);
+
+        // 4. Create a test user for blogs 
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
+
+    }
 }

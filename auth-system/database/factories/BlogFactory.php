@@ -12,13 +12,13 @@ class BlogFactory extends Factory
 
     // Define the model's default state.
     public function definition()
-    {
-        return [
-            'user_id' => \App\Models\User::factory(),
-            'title' => $this->faker->sentence(),
-            'excerpt' => $this->faker->paragraph(),
-            'content' => $this->faker->paragraphs(3, true),
-            'published_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
-        ];
-    }
+{
+    return [
+        'title' => $this->faker->sentence(),
+        'excerpt' => $this->faker->paragraph(),
+        'content' => $this->faker->paragraphs(3, true),
+        'published_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+    ];
+}
+
 }

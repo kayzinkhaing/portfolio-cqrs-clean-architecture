@@ -8,11 +8,16 @@
   </button>
 </template>
 
-<script setup>
-defineProps({
-  loading: Boolean,
+<script setup lang="ts">
+import { PropType } from 'vue'
+
+const props = defineProps({
+  loading: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
   loadingText: {
-    type: String,
+    type: String as PropType<string>,
     default: 'Deleting...',
   },
 })

@@ -1,8 +1,9 @@
-// src/router/index.js
+// src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import BlogListView from '@/views/BlogListView.vue'
 import LoginView from '@/views/LoginView.vue'
+// import LogoutView from '@/views/LogoutView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import EditBlogView from '@/views/EditBlogView.vue'
@@ -17,6 +18,7 @@ const routes = [
   { path: '/create-blog', name: 'CreateBlog', component: CreateBlogView, meta: { requiresAuth: true }},
   { path: '/edit-blog/:id', name: 'EditBlog', component: EditBlogView, meta: { requiresAuth: true }},
   { path: '/profile', name: 'Profile', component: ProfileView, meta: { requiresAuth: true }},
+  // { path: '/logout', name: 'Logout', component: LogoutView }
 ]
 
 const router = createRouter({

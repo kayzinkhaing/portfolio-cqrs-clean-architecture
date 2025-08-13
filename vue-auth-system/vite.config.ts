@@ -1,18 +1,16 @@
-/// <reference types="node" />
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
-import tsconfigPaths from 'vite-tsconfig-paths'  // <-- new import
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   plugins: [
     vue(),
-    tsconfigPaths(), // <-- add this plugin here
+    tsconfigPaths(),
   ],
   resolve: {
-    alias: [
-      { find: '@', replacement: path.resolve(__dirname, 'src') },
-    ],
-  }
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
 })

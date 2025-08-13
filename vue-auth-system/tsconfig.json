@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "lib": ["es2019", "dom"],
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
@@ -12,7 +13,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "@tanstack/vue-query"]
   },
   "include": [
     "src/**/*.ts",

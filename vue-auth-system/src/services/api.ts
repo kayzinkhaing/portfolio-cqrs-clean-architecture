@@ -1,38 +1,64 @@
-import axios, { AxiosResponse } from 'axios'
+// src/services/api.ts
+import axios, { AxiosInstance, AxiosResponse } from 'axios'
 
-const api = axios.create({
+// Axios instance with baseURL and credentials for CSRF cookies & sessions
+const api: AxiosInstance = axios.create({
   baseURL: 'http://localhost:8000/api',
   withCredentials: true,
 })
 
-// Define data types (customize as needed)
-interface RegisterData {
+// --- Types ---
+
+// User returned by backend
+export interface User {
+  id: number
+  name: string
+  email: string
+  township_id?: number
+  ward_id?: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface RegisterData {
   name: string
   email: string
   password: string
   password_confirmation: string
 }
 
-interface LoginData {
+export interface LoginData {
   email: string
   password: string
 }
 
-interface ProfileData {
-  name?: string
-  email?: string
-}
-
-interface BlogData {
+export interface BlogData {
   title: string
   excerpt: string
   content: string
 }
 
-// CSRF and auth token helpers
+// Response shape for Auth endpoints (login/register)
+export interface AuthResponse {
+  user: User
+  token: string
+  token_type: string
+}
+
+// --- CSRF Token Management ---
+
+/**
+ * Fetch CSRF cookie from backend. Call before state-changing requests.
+ */
 export const getCsrfCookie = (): Promise<AxiosResponse> =>
   axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true })
 
+// --- Auth Token Management ---
+
+/**
+ * Set or clear the Authorization header for all axios requests
+ * @param token - Bearer token or null to clear
+ */
 export const setAuthToken = (token: string | null): void => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -41,54 +67,58 @@ export const setAuthToken = (token: string | null): void => {
   }
 }
 
-// Auth
-export const register = async (data: RegisterData): Promise<AxiosResponse> => {
+// --- Helper for CSRF protected requests ---
+
+async function withCsrf<T>(
+  requestFn: () => Promise<AxiosResponse<T>>
+): Promise<AxiosResponse<T>> {
   await getCsrfCookie()
-  return api.post('/register', data)
+  return requestFn()
 }
 
-export const login = async (data: LoginData): Promise<AxiosResponse> => {
-  await getCsrfCookie()
-  return api.post('/login', data)
-}
+// --- API Methods ---
 
-export const getProfile = (): Promise<AxiosResponse> => api.get('/profile')
+// Register new user
+export const register = (data: RegisterData): Promise<AxiosResponse<{ data: AuthResponse }>> =>
+  withCsrf(() => api.post('/register', data))
 
-export const updateProfile = (data: ProfileData): Promise<AxiosResponse> =>
-  api.put('/update-profile', data)
+// Login user
+export const login = (data: LoginData): Promise<AxiosResponse<{ data: AuthResponse }>> =>
+  withCsrf(() => api.post('/login', data))
 
-export const logout = (): Promise<AxiosResponse> => api.post('/logout')
+// Get currently authenticated user's profile
+export const getProfile = (): Promise<AxiosResponse<User>> =>
+  api.get('/profile')
 
-// Location data
-export const getTownships = (): Promise<AxiosResponse> => api.get('/townships')
+// Update user's profile
+export const updateProfile = (data: Partial<User>): Promise<AxiosResponse<{ data: User }>> =>
+  withCsrf(() => api.put('/update-profile', data))
 
-export const getWards = (): Promise<AxiosResponse> => api.get('/wards')
+// Logout user
+export const logout = (): Promise<AxiosResponse> =>
+  withCsrf(() => api.post('/logout'))
 
-// Blogs — Public (no auth required)
-// export const getBlogs = (): Promise<AxiosResponse> => api.get('/blogs')
-export const getBlogs = (page = 1): Promise<AxiosResponse> =>
-    api.get(`/blogs?page=${page}`)
+// --- Location data ---
 
+export const getTownships = (): Promise<AxiosResponse> =>
+  api.get('/townships')
 
+export const getWards = (): Promise<AxiosResponse> =>
+  api.get('/wards')
+
+// --- Blog endpoints ---
+
+export const getBlogs = (params?: { page?: number; cursor?: string }): Promise<AxiosResponse> =>
+  api.get('/blogs', { params })
 
 export const getBlog = (id: number | string): Promise<AxiosResponse> =>
   api.get(`/blogs/${id}`)
 
-// Blogs — Protected (auth required)
-export const createBlog = async (data: BlogData): Promise<AxiosResponse> => {
-  await getCsrfCookie()
-  return api.post('/blogs', data)
-}
+export const createBlog = (data: BlogData): Promise<AxiosResponse> =>
+  withCsrf(() => api.post('/blogs', data))
 
-export const updateBlog = async (
-  id: number | string,
-  data: BlogData
-): Promise<AxiosResponse> => {
-  await getCsrfCookie()
-  return api.put(`/blogs/${id}`, data)
-}
+export const updateBlog = (id: number | string, data: BlogData): Promise<AxiosResponse> =>
+  withCsrf(() => api.put(`/blogs/${id}`, data))
 
-export const deleteBlog = async (id: number | string): Promise<AxiosResponse> => {
-  await getCsrfCookie()
-  return api.delete(`/blogs/${id}`)
-}
+export const deleteBlog = (id: number | string): Promise<AxiosResponse> =>
+  withCsrf(() => api.delete(`/blogs/${id}`))

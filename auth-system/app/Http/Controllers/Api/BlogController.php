@@ -15,10 +15,24 @@ class BlogController extends Controller
     /**
      * Display a listing of blogs (public).
      */
-    public function index()
+    // public function index()
+    // {
+    //     // Eager load user (author) with only id and name fields
+    //     $blogs = Blog::with('user:id,name')->latest()->paginate(10);
+
+    //     return response()->json($blogs);
+    // }
+
+    public function index(Request $request)
     {
-        // Eager load user (author) with only id and name fields
-        $blogs = Blog::with('user:id,name')->latest()->paginate(10);
+        $query = Blog::with('user:id,name')->latest();
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Use cursor pagination instead of paginate
+        $blogs = $query->cursorPaginate(10);
 
         return response()->json($blogs);
     }

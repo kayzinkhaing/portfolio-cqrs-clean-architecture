@@ -5,15 +5,9 @@ import {
   getProfile,
   register,
   setAuthToken,
+  updateProfile, 
+  User
 } from '@/services/api'
-
-interface User {
-  name: string
-  email: string
-  township_id?: string | number
-  ward_id?: string | number
-  // ...other fields
-}
 
 interface AuthState {
   user: User | null
@@ -21,9 +15,10 @@ interface AuthState {
   loading: boolean
   error: string | null
   initialized: boolean
+  errors: Record<string, string> // ✅ for validation errors
 }
 
-interface Credentials {
+export interface Credentials {
   email: string
   password: string
 }
@@ -35,10 +30,13 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null,
     initialized: false,
+    errors: {}
   }),
+
   getters: {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
   },
+
   actions: {
     setToken(token: string): void {
       this.token = token
@@ -99,5 +97,31 @@ export const useAuthStore = defineStore('auth', {
       }
       this.clearAuth()
     },
-  },
+
+    // ✅ New profile update method
+    async updateUserProfile(updates: Partial<User>): Promise<void> {
+      if (!this.user) return
+
+      this.loading = true
+      this.errors = {}
+      try {
+        const res = await updateProfile(updates)
+
+        // Merge updated fields into current user state
+        this.user = {
+          ...this.user,
+          ...res.data.data,
+        }
+      } catch (error: any) {
+        if (error.response?.status === 422) {
+          this.errors = error.response.data.errors
+        } else {
+          console.error('Profile update failed:', error)
+          throw error
+        }
+      } finally {
+        this.loading = false
+      }
+    }
+  }
 })

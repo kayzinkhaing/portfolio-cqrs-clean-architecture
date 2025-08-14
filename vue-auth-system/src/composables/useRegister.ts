@@ -9,6 +9,9 @@ import { useErrorStore } from '../stores/errorStore'
 import { useSecureForm } from '../composables/useSecureForm'
 import axiosSecure from '../services/axiosSecure'
 import { handleApiError } from '../utils/errorHandler'
+  import { getTownships, getWards } from '../services/location'
+  import { register } from '../services/auth'
+
 
 // Types
 interface Township { id: number | string; name: string }
@@ -55,17 +58,32 @@ export function useRegister() {
   const { load } = useApiLoader()
   const { isSubmitting, submitSecure } = useSecureForm()
 
-  onMounted(() => {
-    errorStore.clearErrors()
-    load(async () => {
-      const [tRes, wRes] = await Promise.all([
-        axiosSecure.get('/townships'),
-        axiosSecure.get('/wards')
-      ])
-      townships.value = tRes.data
-      wards.value = wRes.data
-    }, isLoading)
-  })
+  // onMounted(() => {
+  //   errorStore.clearErrors()
+  //   load(async () => {
+  //     const [tRes, wRes] = await Promise.all([
+  //       axiosSecure.get('/townships'),
+  //       axiosSecure.get('/wards')
+  //     ])
+  //     townships.value = tRes.data
+  //     wards.value = wRes.data
+  //   }, isLoading)
+  // })
+
+
+onMounted(() => {
+  errorStore.clearErrors()
+  load(async () => {
+    const [tRes, wRes] = await Promise.all([
+      getTownships(),
+      getWards()
+    ])
+    // Make sure the data is an array
+    townships.value = Array.isArray(tRes.data) ? tRes.data : []
+    wards.value = Array.isArray(wRes.data) ? wRes.data : []
+  }, isLoading)
+})
+
 
   const handleRegister = async () => {
     errorStore.clearErrors()
@@ -77,7 +95,8 @@ export function useRegister() {
     }
 
     try {
-      await submitSecure('/register', form.value, 'post')
+      // await submitSecure('/register', form.value, 'post')
+      await register(form.value)
       router.push('/login')
     } catch (error) {
       handleApiError(error)

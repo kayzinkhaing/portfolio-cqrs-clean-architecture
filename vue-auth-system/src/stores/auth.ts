@@ -1,65 +1,46 @@
+// src/stores/auth.ts
 import { defineStore } from 'pinia'
-import {
-  login,
-  logout,
-  getProfile,
-  register,
-  setAuthToken,
-  updateProfile, 
-  User
-} from '@/services/api'
-
-interface AuthState {
-  user: User | null
-  token: string
-  loading: boolean
-  error: string | null
-  initialized: boolean
-  errors: Record<string, string> // ✅ for validation errors
-}
+import { login, logout, getProfile, register, updateProfile } from '@/services/auth'
+import { setAuthToken } from '@/services/axios'
+import type { User } from '@/services/types'
 
 export interface Credentials {
   email: string
   password: string
 }
-
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
+  state: () => ({
+    user: null as User | null,
     token: localStorage.getItem('token') || '',
     loading: false,
-    error: null,
+    error: null as string | null,
     initialized: false,
-    errors: {}
+    errors: {} as Record<string, string>
   }),
-
   getters: {
-    isAuthenticated: (state): boolean => !!state.token && !!state.user,
+    isAuthenticated: state => !!state.token && !!state.user,
   },
-
   actions: {
-    setToken(token: string): void {
+    setToken(token: string) {
       this.token = token
       localStorage.setItem('token', token)
       setAuthToken(token)
     },
-    setUser(user: User): void {
-      this.user = user
+    setUser(user: User) { this.user = user },
+    clearAuth() {
+      this.user = null
+      this.token = ''
+      localStorage.removeItem('token')
+      setAuthToken(null)
     },
-    async initialize(): Promise<void> {
+    async initialize() {
       if (this.token) {
         setAuthToken(this.token)
         await this.fetchUser()
       }
       this.initialized = true
     },
-    clearAuth(): void {
-      this.user = null
-      this.token = ''
-      localStorage.removeItem('token')
-      setAuthToken(null)
-    },
-    async loginUser(credentials: Credentials): Promise<void> {
+    async loginUser(credentials: { email: string; password: string }) {
       this.loading = true
       this.error = null
       try {
@@ -70,58 +51,25 @@ export const useAuthStore = defineStore('auth', {
         this.error = err.response?.data?.message || 'Login failed'
         this.clearAuth()
         throw err
-      } finally {
-        this.loading = false
-      }
+      } finally { this.loading = false }
     },
-    async fetchUser(): Promise<void> {
-      if (!this.token) {
-        this.clearAuth()
-        this.initialized = true
-        return
-      }
-      try {
-        const res = await getProfile()
-        this.user = res.data
-      } catch {
-        this.clearAuth()
-      } finally {
-        this.initialized = true
-      }
+    async fetchUser() {
+      if (!this.token) { this.clearAuth(); this.initialized = true; return }
+      try { const res = await getProfile(); this.user = res.data } 
+      catch { this.clearAuth() } 
+      finally { this.initialized = true }
     },
-    async logoutUser(): Promise<void> {
-      try {
-        await logout()
-      } catch (err) {
-        console.error('Logout failed', err)
-      }
-      this.clearAuth()
-    },
-
-    // ✅ New profile update method
-    async updateUserProfile(updates: Partial<User>): Promise<void> {
+    async logoutUser() { try { await logout() } catch {} finally { this.clearAuth() } },
+    async updateUserProfile(updates: Partial<User>) {
       if (!this.user) return
-
-      this.loading = true
-      this.errors = {}
+      this.loading = true; this.errors = {}
       try {
         const res = await updateProfile(updates)
-
-        // Merge updated fields into current user state
-        this.user = {
-          ...this.user,
-          ...res.data.data,
-        }
-      } catch (error: any) {
-        if (error.response?.status === 422) {
-          this.errors = error.response.data.errors
-        } else {
-          console.error('Profile update failed:', error)
-          throw error
-        }
-      } finally {
-        this.loading = false
-      }
+        this.user = { ...this.user, ...res.data.data }
+      } catch (err: any) {
+        if (err.response?.status === 422) this.errors = err.response.data.errors
+        else throw err
+      } finally { this.loading = false }
     }
   }
 })

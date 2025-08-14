@@ -1,7 +1,7 @@
 // src/composables/useProfile.ts
 import { ref, onMounted, computed, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { getTownships, getWards } from '../services/api'
+import { getTownships, getWards } from '../services/location'
 import { useAuthStore } from '../stores/auth'
 import { profileFields } from '../config/forms/profileFields'
 
@@ -83,6 +83,6 @@ export function useProfile() {
     fields,
     pageLoading,
     update,
-    localUser,  // export this to bind form with localUser, not auth.user
+    localUser,  
   }
 }

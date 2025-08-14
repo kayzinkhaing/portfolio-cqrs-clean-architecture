@@ -14,7 +14,7 @@
         :fields="fields"
         :form="form"
         :errors="errorStore.errors"
-        :loading="isSubmitting"
+        :loading="isLoading"
         submit-label="Login"
         @submit="handleLogin" />
     </div>

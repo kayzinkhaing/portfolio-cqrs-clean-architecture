@@ -2,89 +2,39 @@
   <nav class="bg-white shadow-md px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <!-- Logo -->
-      <router-link to="/" class="text-3xl font-extrabold text-indigo-600 hover:text-indigo-800">
+      <router-link to="/"
+        class="text-2xl font-extrabold bg-gradient-to-r from-indigo-500 to-indigo-700 text-transparent bg-clip-text hover:from-indigo-600 hover:to-indigo-800 transition duration-300">
         MyBlog
       </router-link>
   
-      <!-- Desktop Menu -->
+      <!-- Menu -->
       <div class="flex items-center space-x-6 relative">
-        <template v-if="auth.initialized && auth.isAuthenticated">
-          <div ref="dropdownRef" class="relative">
-            <button @click="toggleDropdown"
-              class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 font-medium focus:outline-none"
-              type="button">
-              <span>{{ auth.user?.name }}</span>
-              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            <!-- Dropdown -->
-            <div v-if="showDropdown"
-              class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200">
-              <router-link to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700"
-                @click="closeDropdown">
-                Profile
-              </router-link>
-              <button @click="handleLogout"
-                class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 hover:text-red-700">
-                Logout
-              </button>
-            </div>
-          </div>
-        </template>
+        <!-- Authenticated -->
+        <AuthenticatedMenu v-if="isAuthenticated" :user="auth.user" @logout="handleLogout" />
   
-        <template v-else-if="auth.initialized">
-          <router-link to="/login" class="text-gray-700 hover:text-indigo-600 font-medium transition">
-            Login
-          </router-link>
-          <router-link to="/register" class="text-gray-700 hover:text-indigo-600 font-medium transition">
-            Register
-          </router-link>
-        </template>
+        <!-- Guest -->
+        <GuestMenu v-else-if="auth.initialized" />
       </div>
     </div>
   </nav>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import AuthenticatedMenu from '@/Navbar/AuthenticatedMenu.vue'
+import GuestMenu from '@/Navbar/GuestMenu.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
-const showDropdown = ref(false)
-const dropdownRef = ref(null)
+
+const isAuthenticated = computed(
+  () => auth.initialized && auth.isAuthenticated
+)
 
 const handleLogout = async () => {
   await auth.logoutUser()
   router.push('/login')
-  showDropdown.value = false
 }
-
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value
-}
-
-const closeDropdown = () => {
-  showDropdown.value = false
-}
-
-const handleClickOutside = (event) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    showDropdown.value = false
-  }
-}
-
-onMounted(async () => {
-  if (!auth.user) {
-    await auth.fetchUser()
-  }
-  document.addEventListener('click', handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 </script>

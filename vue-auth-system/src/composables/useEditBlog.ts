@@ -10,7 +10,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 
 export interface BlogForm {
   title: string
-  excerpt: string
+  excerpt?: string
   content: string
   published_at?: string
 }

@@ -18,3 +18,27 @@ export const updateProfile = (
 ): Promise<AxiosResponse<{ data: User }>> => withCsrf(() => api.put(ROUTES.auth.updateProfile, data))
 
 export const logout = (): Promise<AxiosResponse> => withCsrf(() => api.post(ROUTES.auth.logout))
+
+// --- New Forgot & Reset Password API methods ---
+export const forgotPassword = (email: string): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+  withCsrf(() => api.post(ROUTES.auth.forgotPassword, { email }))
+
+export const resetPassword = (payload: {
+  email: string
+  token: string
+  password: string
+  password_confirmation: string
+}): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+  withCsrf(() => api.post(ROUTES.auth.resetPassword, payload))
+
+  // --- New 2FA API methods ---
+export const enable2FA = (): Promise<AxiosResponse<{ success: boolean; qr: string; secret: string }>> =>
+  withCsrf(() => api.post(ROUTES.auth.enable2FA))
+
+// --- Disable 2FA API method ---
+export const disable2FA = (): Promise<AxiosResponse<{ success: boolean; message: string; data: User }>> =>
+  withCsrf(() => api.post(ROUTES.auth.disable2FA))
+
+
+export const verify2FA = (code: string): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
+  withCsrf(() => api.post(ROUTES.auth.verify2FA, { code }))

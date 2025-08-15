@@ -29,27 +29,35 @@ export function useLogin() {
 
   const { load } = useApiLoader()
 
-  const handleLogin = async () => {
-    errorStore.clearErrors()
-
-    const validationErrors = validateLoginForm(form.value)
-    if (Object.keys(validationErrors).length) {
-      errorStore.setValidationErrors(validationErrors)
-      return
-    }
-
-    try {
-      await load(async () => {
-        // Sanitize and cast input as Credentials
-        const credentials = sanitizeObject(form.value) as Credentials
-        // Call the auth store action that handles login API, token, user fetch
-        await auth.loginUser(credentials)
-        router.push('/')
-      }, isLoading)
-    } catch (error) {
-      handleApiError(error)
-    }
+  const goToForgotPassword = () => {
+    router.push('/forgot-password')
   }
+  const handleLogin = async () => {
+  errorStore.clearErrors()
+
+  const validationErrors = validateLoginForm(form.value)
+  if (Object.keys(validationErrors).length) {
+    errorStore.setValidationErrors(validationErrors)
+    return
+  }
+
+  try {
+    await load(async () => {
+      const credentials = sanitizeObject(form.value) as Credentials
+      await auth.loginUser(credentials)
+
+      // Check if 2FA is required
+      if (auth.requires2FA) {
+        router.push({ name: 'TwoFactor' }) // redirect to 2FA page
+      } else {
+        router.push({ name: 'Home' }) // normal home page
+      }
+    }, isLoading)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
 
   return {
     form,
@@ -57,5 +65,6 @@ export function useLogin() {
     // isSubmitting,
     errorStore,
     handleLogin,
+    goToForgotPassword,
   }
 }

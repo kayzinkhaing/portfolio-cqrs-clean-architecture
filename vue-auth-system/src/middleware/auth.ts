@@ -2,10 +2,6 @@
 import { useAuthStore } from '@/stores/auth'
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
-/**
- * Auth middleware
- * Redirects to login if user is not authenticated
- */
 export function authGuard(
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
@@ -13,12 +9,19 @@ export function authGuard(
 ) {
   const auth = useAuthStore()
 
+  // Not logged in → redirect to login
   if (!auth.isAuthenticated) {
-    next({
+    return next({
       name: 'Login',
-      query: { redirect: to.fullPath }, // optional: redirect back after login
+      query: { redirect: to.fullPath },
     })
-  } else {
-    next()
   }
+
+  // Logged in but 2FA required → redirect to /2fa
+  if (auth.requires2FA && to.name !== 'TwoFactor') {
+    return next({ name: 'TwoFactor' })
+  }
+
+  // Otherwise, allow access
+  next()
 }

@@ -1,13 +1,26 @@
 // src/services/types.ts
 
+export interface Township {
+  id: number
+  name: string
+}
+
+export interface Ward {
+  id: number
+  name: string
+}
+
 export interface User {
   id: number
   name: string
   email: string
   township_id?: number
   ward_id?: number
+  township?: Township  // <-- added
+  ward?: Ward          // <-- added
   created_at?: string
   updated_at?: string
+  two_factor_enabled?: boolean
 }
 
 export interface RegisterData {
@@ -37,6 +50,8 @@ export interface Blog {
   excerpt?: string | null
   content: string
   published_at?: string
+  created_at: string
+  updated_at: string
   user_id: number | string
   user?: { id: number | string; name: string } | null
 }

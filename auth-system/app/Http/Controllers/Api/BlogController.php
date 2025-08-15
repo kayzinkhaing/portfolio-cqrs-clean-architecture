@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Blog;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -14,25 +15,32 @@ class BlogController extends Controller
 
     /**
      * Display a listing of blogs (public).
+     * Use a scoped query to filter by user_id if provided.
      */
-    // public function index()
-    // {
-    //     // Eager load user (author) with only id and name fields
-    //     $blogs = Blog::with('user:id,name')->latest()->paginate(10);
-
-    //     return response()->json($blogs);
-    // }
-
     public function index(Request $request)
     {
-        $query = Blog::with('user:id,name')->latest();
+        // Use a local scope to optionally filter by user_id
+        $blogs = Blog::query()
+            ->when($request->filled('user_id'), function ($query) use ($request) {
+                $query->where('user_id', $request->user_id);
+            })
+            ->with('user:id,name')
+            ->latest()
+            ->cursorPaginate(10);
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
+        return response()->json($blogs);
+    }
 
-        // Use cursor pagination instead of paginate
-        $blogs = $query->cursorPaginate(10);
+    /**
+     * Display a listing of blogs for a specific user.
+     * This method is optimized for a large number of users.
+     */
+    public function userBlogs(User $user)
+    {
+        // Directly query the Blog model and filter by the user_id.
+        $blogs = Blog::where('user_id', $user->id)
+            ->latest()
+            ->cursorPaginate(10);
 
         return response()->json($blogs);
     }
@@ -42,7 +50,6 @@ class BlogController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate input
         $request->validate([
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string',
@@ -50,7 +57,6 @@ class BlogController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        // Create blog post for logged-in user
         $blog = Blog::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
@@ -79,10 +85,8 @@ class BlogController extends Controller
      */
     public function update(Request $request, Blog $blog)
     {
-        // Check authorization policy: only owner can update
         $this->authorize('update', $blog);
 
-        // Validate input
         $request->validate([
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string',
@@ -90,7 +94,6 @@ class BlogController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        // Update blog
         $blog->update($request->only(['title', 'excerpt', 'content', 'published_at']));
 
         return response()->json([
@@ -104,7 +107,6 @@ class BlogController extends Controller
      */
     public function destroy(Blog $blog)
     {
-        // Check authorization policy: only owner can delete
         $this->authorize('delete', $blog);
 
         $blog->delete();

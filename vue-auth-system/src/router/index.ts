@@ -35,12 +35,41 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
     component: EditBlogView,
     meta: { middlewares: [authGuard] },
   },
+  // {
+  //   path: '/profile',
+  //   name: 'Profile',
+  //   component: ProfileView,
+  //   meta: { middlewares: [authGuard] },
+  // },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: ProfileView,
-    meta: { middlewares: [authGuard] },
+    path: '/settings',
+    component: () => import('@/views/Settings/SettingsLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { path: 'info', component: () => import('@/views/Settings/InformationView.vue') },
+      { path: 'profile-edit', component: () => import('@/views/Settings/ProfileEdit.vue') },
+      { path: '2fa', component: () => import('@/views/Settings/TwoFactor.vue') },
+      { path: 'blogs', component: () => import('@/views/Settings/Blogs.vue') },
+    ]
   },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/ResetPasswordView.vue')
+  },
+  {
+      path: '/2fa',
+      name: 'TwoFactor',
+      component: () => import('@/views/TwoFactorView.vue'),
+      meta: { middlewares: [authGuard] } // user must be logged in first
+    }
+
+
 ]
 
 const router = createRouter({

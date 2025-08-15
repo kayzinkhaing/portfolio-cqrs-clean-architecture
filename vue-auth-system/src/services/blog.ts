@@ -19,3 +19,6 @@ export const updateBlog = (id: number | string, data: BlogData): Promise<AxiosRe
 
 export const deleteBlog = (id: number | string): Promise<AxiosResponse> =>
   withCsrf(() => api.delete(ROUTES.blogs.item(id)))
+
+export const getUserBlogs = (userId: number | string, params?: { page?: number; cursor?: string }): Promise<AxiosResponse<BlogResponse>> =>
+  api.get(ROUTES.blogs.user(userId), { params })

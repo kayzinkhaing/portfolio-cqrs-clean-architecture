@@ -72,7 +72,7 @@ export function useProfile() {
     try {
       // Update using localUser data, not directly auth.user
       await auth.updateUserProfile(localUser)
-      router.push('/blogs')
+      router.push('/settings/info')
     } catch (error) {
       console.error('Profile update failed:', error)
     }

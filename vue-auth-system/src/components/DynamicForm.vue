@@ -1,21 +1,25 @@
 <template>
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-        <component
-  v-for="field in fields"
-  :key="field.model"
-  :is="getComponent(field.type)"
-  v-model="form[field.model]"
-  v-bind="field.props"
-  :label="field.label"
-  :placeholder="field.placeholder"
-  :type="field.type"
-  :options="field.options"
-  :error="errors[field.model]" 
-  @change="field.type === 'select' ? onSelectChange(field.model) : null"
-/>
+    <!-- DynamicForm.vue -->
+<form @submit.prevent="handleSubmit" class="space-y-4">
+  <component
+    v-for="field in fields"
+    :key="field.model"
+    :is="getComponent(field.type)"
+    v-model="form[field.model]"
+    v-bind="field.props"
+    :label="field.label"
+    :placeholder="field.placeholder"
+    :type="field.type"
+    :options="field.options"
+    :error="errors[field.model]" 
+    @change="field.type === 'select' ? onSelectChange(field.model) : null"
+  />
 
-        <SubmitButton :loading="loading">{{ submitLabel }}</SubmitButton>
-    </form>
+  <slot name="extra"></slot> <!-- <-- New slot for extra links/buttons -->
+
+  <SubmitButton :loading="loading">{{ submitLabel }}</SubmitButton>
+</form>
+
 </template>
 
 <script setup lang="ts">

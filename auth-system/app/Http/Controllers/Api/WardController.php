@@ -3,61 +3,46 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ward;
-use Illuminate\Http\Request;
+use App\Http\Requests\WardRequest;
+use App\Http\Resources\WardResource;
+use App\Services\WardService;
 
 class WardController extends Controller
 {
-    // List wards (optionally filter by township_id)
+    protected WardService $wardService;
+
+    public function __construct(WardService $wardService)
+    {
+        $this->wardService = $wardService;
+    }
+
     public function index()
     {
-        // Return ALL wards without filtering.
-        // Frontend will filter client-side.
-        return response()->json(Ward::all());
+        $wards = $this->wardService->listAll();
+        return WardResource::collection($wards);
     }
 
-
-    // Create a new ward
-    public function store(Request $request)
+    public function store(WardRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'township_id' => 'required|exists:townships,id',
-        ]);
-
-        $ward = Ward::create($request->only('name', 'township_id'));
-
-        return response()->json($ward, 201);
+        $ward = $this->wardService->create($request->validated());
+        return new WardResource($ward);
     }
 
-    // Show one ward
     public function show($id)
     {
-        $ward = Ward::findOrFail($id);
-        return response()->json($ward);
+        $ward = $this->wardService->show($id);
+        return new WardResource($ward);
     }
 
-    // Update a ward
-    public function update(Request $request, $id)
+    public function update(WardRequest $request, $id)
     {
-        $ward = Ward::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'township_id' => 'required|exists:townships,id',
-        ]);
-
-        $ward->update($request->only('name', 'township_id'));
-
-        return response()->json($ward);
+        $ward = $this->wardService->update($id, $request->validated());
+        return new WardResource($ward);
     }
 
-    // Delete a ward
     public function destroy($id)
     {
-        $ward = Ward::findOrFail($id);
-        $ward->delete();
-
+        $this->wardService->delete($id);
         return response()->json(null, 204);
     }
 }

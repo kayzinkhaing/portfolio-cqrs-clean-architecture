@@ -71,6 +71,40 @@ return [
             'block_for' => null,
             'after_commit' => false,
         ],
+        'rabbitmq' => [
+            'driver' => 'rabbitmq',
+            'queue'  => env('RABBITMQ_QUEUE', 'domain-events'),
+            'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
+
+            'hosts' => [[
+                'host'      => env('RABBITMQ_HOST', 'rabbitmq'),
+                'port'      => env('RABBITMQ_PORT', 5672),
+                'user'      => env('RABBITMQ_USER', 'guest'),
+                'password'  => env('RABBITMQ_PASSWORD', 'guest'),
+                'vhost'     => env('RABBITMQ_VHOST', '/'),
+            ]],
+
+            'options' => [
+                'heartbeat' => 30,
+                'persistent' => true,
+                'queue' => [
+                    'exchange' => 'domain-exchange',
+                    'exchange_type' => 'topic',
+                    'exchange_routing_key' => '#',
+                    'declare_exchange' => true,
+                    'declare_rabbit_exchange' => true,
+                    'declare' => true,
+                    'passive' => false,
+                    'durable' => true,
+                    'exclusive' => false,
+                    'auto_delete' => false,
+                    'arguments' => [
+                        'x-dead-letter-exchange' => ['S', 'domain-dlx'],
+                    ],
+                ],
+            ],
+        ],
+
 
     ],
 

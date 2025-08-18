@@ -63,4 +63,11 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPasswordNotification($token));
     }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            event(new \App\Events\UserCreatedEvent($user));
+        });
+    }
 }

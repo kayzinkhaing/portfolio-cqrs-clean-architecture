@@ -3,65 +3,47 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Township;
-use Illuminate\Http\Request;
+use App\Http\Requests\TownshipStoreRequest;
+use App\Http\Requests\TownshipUpdateRequest;
+use App\Http\Resources\TownshipResource;
+use App\Services\TownshipService;
 
 class TownshipController extends Controller
 {
-    // List all townships
-    // public function index()
-    // {
-    //     return response()->json(Township::all());
-    // }
+    protected TownshipService $townshipService;
+
+    public function __construct(TownshipService $townshipService)
+    {
+        $this->townshipService = $townshipService;
+    }
 
     public function index()
     {
-        return response()->json(
-            Township::with('wards:id,name,township_id') // eager load wards
-                ->select('id', 'name') // only needed fields
-                ->get()
-        );
+        $townships = $this->townshipService->listAll();
+        return TownshipResource::collection($townships);
     }
 
-    // Create a new township
-    public function store(Request $request)
+    public function store(TownshipStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:townships,name',
-        ]);
-
-        $township = Township::create($request->only('name'));
-
-        return response()->json($township, 201);
+        $township = $this->townshipService->create($request->validated());
+        return new TownshipResource($township);
     }
 
-    // Show one township
     public function show($id)
     {
-        $township = Township::findOrFail($id);
-        return response()->json($township);
+        $township = $this->townshipService->show($id);
+        return new TownshipResource($township);
     }
 
-    // Update a township
-    public function update(Request $request, $id)
+    public function update(TownshipUpdateRequest $request, $id)
     {
-        $township = Township::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|max:255|unique:townships,name,' . $township->id,
-        ]);
-
-        $township->update($request->only('name'));
-
-        return response()->json($township);
+        $township = $this->townshipService->update($id, $request->validated());
+        return new TownshipResource($township);
     }
 
-    // Delete a township
     public function destroy($id)
     {
-        $township = Township::findOrFail($id);
-        $township->delete();
-
+        $this->townshipService->delete($id);
         return response()->json(null, 204);
     }
 }

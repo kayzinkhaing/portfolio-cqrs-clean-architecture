@@ -79,8 +79,8 @@ onMounted(() => {
       getWards()
     ])
     // Make sure the data is an array
-    townships.value = Array.isArray(tRes.data) ? tRes.data : []
-    wards.value = Array.isArray(wRes.data) ? wRes.data : []
+    townships.value = Array.isArray(tRes.data.data) ? tRes.data.data : []
+    wards.value = Array.isArray(wRes.data.data) ? wRes.data.data : []
   }, isLoading)
 })
 

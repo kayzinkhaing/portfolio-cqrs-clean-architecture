@@ -1,28 +1,39 @@
 // src/router/index.ts
-import { createRouter, createWebHistory, RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  RouteRecordRaw,
+  RouteLocationNormalized,
+  NavigationGuardNext,
+} from 'vue-router'
+
+// Views
 import HomeView from '@/views/HomeView.vue'
 import BlogListView from '@/views/BlogListView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
-import ProfileView from '@/views/ProfileView.vue'
 import EditBlogView from '@/views/EditBlogView.vue'
 import CreateBlogView from '@/views/CreateBlogView.vue'
 
+// Middleware
 import { authGuard } from '@/middleware/auth'
 import { applyMiddleware } from '@/middleware'
 import type { Middleware } from '@/middleware/types'
 
-// Extend Vue Router route meta type
+// Extend Vue Router meta type
 interface RouteMetaWithMiddleware {
   middlewares?: Middleware[]
+  requiresAuth?: boolean
 }
 
-// Type-safe routes
+// Define routes
 const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
   { path: '/', name: 'Home', component: HomeView },
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/register', name: 'Register', component: RegisterView },
   { path: '/blogs', name: 'BlogList', component: BlogListView },
+
+  // Protected blog routes
   {
     path: '/create-blog',
     name: 'CreateBlog',
@@ -35,23 +46,21 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
     component: EditBlogView,
     meta: { middlewares: [authGuard] },
   },
-  // {
-  //   path: '/profile',
-  //   name: 'Profile',
-  //   component: ProfileView,
-  //   meta: { middlewares: [authGuard] },
-  // },
+
+// Settings (protected parent + nested children)
   {
     path: '/settings',
     component: () => import('@/views/Settings/SettingsLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { middlewares: [authGuard] }, // protect parent
     children: [
-      { path: 'info', component: () => import('@/views/Settings/InformationView.vue') },
-      { path: 'profile-edit', component: () => import('@/views/Settings/ProfileEdit.vue') },
-      { path: '2fa', component: () => import('@/views/Settings/TwoFactor.vue') },
-      { path: 'blogs', component: () => import('@/views/Settings/Blogs.vue') },
-    ]
+      { path: 'info', name: 'SettingsInfo', component: () => import('@/views/Settings/InformationView.vue') },
+      { path: 'profile-edit', name: 'SettingsProfileEdit', component: () => import('@/views/Settings/ProfileEdit.vue') },
+      { path: '2fa', name: 'Settings2FA', component: () => import('@/views/Settings/TwoFactor.vue') },
+      { path: 'blogs', name: 'SettingsBlogs', component: () => import('@/views/Settings/Blogs.vue') },
+    ],
   },
+  
+  // Auth utilities
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
@@ -60,28 +69,33 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
   {
     path: '/reset-password',
     name: 'ResetPassword',
-    component: () => import('@/views/ResetPasswordView.vue')
+    component: () => import('@/views/ResetPasswordView.vue'),
   },
+
+  // Two-Factor Auth (protected — only logged-in users should see this)
   {
-      path: '/2fa',
-      name: 'TwoFactor',
-      component: () => import('@/views/TwoFactorView.vue'),
-      meta: { middlewares: [authGuard] } // user must be logged in first
-    }
-
-
+    path: '/2fa',
+    name: 'TwoFactor',
+    component: () => import('@/views/TwoFactorView.vue'),
+    meta: { middlewares: [authGuard] },
+  },
 ]
 
+// Create router
 const router = createRouter({
   history: createWebHistory(),
   routes,
 })
 
-// Type-safe dynamic middleware per route
+// Global middleware handler
 router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  const middlewares = (to.meta as RouteMetaWithMiddleware)?.middlewares || []
-  if (middlewares.length > 0) {
-    applyMiddleware(middlewares, to, from, next)
+  // Collect middlewares from all matched routes (parent + child)
+  const middlewareList = to.matched.flatMap(
+    (r) => (r.meta as RouteMetaWithMiddleware)?.middlewares || []
+  )
+
+  if (middlewareList.length > 0) {
+    applyMiddleware(middlewareList, to, from, next)
   } else {
     next()
   }

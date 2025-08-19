@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'mongo' => [
+        'uri'      => env('MONGO_URI', 'mongodb://'.env('MONGO_DB_HOST', 'mongo').':'.env('MONGO_DB_PORT', 27017)),
+        'database' => env('MONGO_DB_DATABASE', 'read_model'),
+    ],
 
 ];

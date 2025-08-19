@@ -5,8 +5,19 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost:27017";
-const dbName = process.env.MONGO_DB || "read_model";
+const mongoHost = process.env.MONGO_DB_HOST || "localhost";
+const mongoPort = process.env.MONGO_DB_PORT || "27017";
+const dbName = process.env.MONGO_DB_DATABASE || "read_model";
+const mongoUrl =
+  process.env.MONGO_URL ||
+  `mongodb://${process.env.MONGO_DB_HOST || "localhost"}:${process.env.MONGO_DB_PORT || "27017"}/${dbName}`;
+
+// ✅ Always include the database name in the connection string
+// const mongoUrl = `mongodb://${mongoHost}:${mongoPort}/${dbName}`;
+
+if (!process.env.MONGO_DB_HOST) {
+  console.warn("⚠️ MONGO_DB_HOST is not set, using default 'localhost'");
+}
 
 const typeDefs = `#graphql
   scalar Date
@@ -29,9 +40,15 @@ const resolvers = {
   Query: {
     users: async (_parent, { limit, search }, { db }) => {
       const filter = search
-        ? { $or: [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] }
+        ? { $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } }
+          ] }
         : {};
-      const docs = await db.collection("users").find(filter).limit(Math.min(limit, 200)).toArray();
+      const docs = await db.collection("users")
+        .find(filter)
+        .limit(Math.min(limit, 200))
+        .toArray();
       return docs.map(m2gUser);
     },
     user: async (_parent, { id }, { db }) => {
@@ -52,25 +69,30 @@ function m2gUser(doc) {
 }
 
 async function start() {
-  const client = new MongoClient(mongoUrl);
-  await client.connect();
-  const db = client.db(dbName);
+  try {
+    console.log(`🔌 Connecting to MongoDB at: ${mongoUrl}`);
+    const client = new MongoClient(mongoUrl);
+    await client.connect();
+    console.log("✅ Connected to MongoDB");
 
-  const server = new ApolloServer({ typeDefs, resolvers });
-  await server.start();
+    const db = client.db(dbName);
 
-  const app = express();
-  app.use(cors());
-  app.use(bodyParser.json());
-  app.use("/graphql", expressMiddleware(server, { context: async () => ({ db }) }));
+    const server = new ApolloServer({ typeDefs, resolvers });
+    await server.start();
 
-  const port = 4000;
-  app.listen({ port }, () => {
-    console.log(`GraphQL ready at http://localhost:${port}/graphql`);
-  });
+    const app = express();
+    app.use(cors());
+    app.use(bodyParser.json());
+    app.use("/graphql", expressMiddleware(server, { context: async () => ({ db }) }));
+
+    const port = 4000;
+    app.listen({ port }, () => {
+      console.log(`🚀 GraphQL ready at http://localhost:${port}/graphql`);
+    });
+  } catch (e) {
+    console.error("❌ MongoDB connection failed:", e.message);
+    process.exit(1);
+  }
 }
 
-start().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+start();

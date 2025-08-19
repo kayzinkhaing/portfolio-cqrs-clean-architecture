@@ -33,7 +33,7 @@ import useBlogs from '../composables/useBlogs'
 import { useErrorStore } from '../stores/errorStore'
 import { blogFields } from '../config/forms/blogFields'
 import { validateBlogForm } from '../utils/blogValidation'
-import type { BlogData } from '../services/types'
+import type { BlogData } from '../api/types'
 
 const route = useRoute()
 const router = useRouter()

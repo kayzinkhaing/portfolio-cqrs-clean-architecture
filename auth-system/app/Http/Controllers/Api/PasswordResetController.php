@@ -2,46 +2,47 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\Buses\QueryBus;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
+use App\Application\Buses\CommandBus;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Application\Commands\ResetPasswordCommand;
+use App\Application\Commands\SendPasswordResetLinkCommand;
+use App\Http\Resources\PasswordResetMessageResource;
 
 class PasswordResetController extends Controller
 {
-    // Forgot Password
-    public function forgotPassword(Request $request)
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
+
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        $status = Password::sendResetLink($request->only('email'));
-
-        return $status === Password::RESET_LINK_SENT
-            ? response()->json(['success' => true, 'message' => __($status)])
-            : response()->json(['success' => false, 'message' => __($status)], 400);
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    // Reset Password
-    public function resetPassword(Request $request)
+    public function forgotPassword(ForgotPasswordRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'token' => 'required|string',
-            'password' => 'required|string|confirmed|min:8',
-        ]);
-
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->password = Hash::make($password);
-                $user->save();
-            }
+        $success = $this->commandBus->dispatch(
+            new SendPasswordResetLinkCommand($request->email)
         );
 
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['success' => true, 'message' => __($status)])
-            : response()->json(['success' => false, 'message' => __($status)], 400);
+        return new PasswordResetMessageResource((object) [
+            'success' => $success,
+            'message' => $success ? 'Reset link sent! Please check your mail.' : 'Failed to send reset link',
+        ]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $success = $this->commandBus->dispatch(
+            new ResetPasswordCommand($request->email, $request->token, $request->password)
+        );
+
+        return (new PasswordResetMessageResource((object) [
+            'success' => $success,
+            'message' => $success ? 'Password reset successfully!' : 'Failed to reset password',
+        ]))->response()->setStatusCode($success ? 200 : 400);
     }
 }

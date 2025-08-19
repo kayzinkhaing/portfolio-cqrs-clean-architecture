@@ -139,7 +139,7 @@ services:
       MYSQL_DATABASE: laravel
     networks: [appnet]
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql", "-uroot", "-proot"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -151,7 +151,7 @@ services:
     image: mongo:6
     container_name: mongo-db
     ports:
-      - "27018:27017"
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks: [appnet]
@@ -193,8 +193,7 @@ services:
     ports:
       - "4000:4000"
     environment:
-      MONGO_URL: mongodb://mongo:27017
-      MONGO_DB: read_model
+      MONGO_URL: mongodb://mongo:27017/read_model
     depends_on:
       mongo:
         condition: service_healthy

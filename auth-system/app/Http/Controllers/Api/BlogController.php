@@ -1,67 +1,48 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
+use App\Application\Commands\CreateBlogCommand;
+use App\Application\Commands\UpdateBlogCommand;
+use App\Application\Commands\DeleteBlogCommand;
+use App\Application\Queries\ListBlogsQuery;
+use App\Application\Queries\ShowBlogQuery;
 use App\Http\Requests\BlogRequest;
 use App\Http\Resources\BlogResource;
-use App\Services\BlogService;
-use Illuminate\Support\Facades\Gate;
 
 class BlogController extends Controller
 {
-    protected BlogService $blogService;
-
-    public function __construct(BlogService $blogService)
-    {
-        $this->blogService = $blogService;
-    }
+    public function __construct(protected CommandBus $commandBus, protected QueryBus $queryBus) {}
 
     public function index()
     {
-        $blogs = $this->blogService->listBlogs(request('user_id'));
-        return BlogResource::collection($blogs);
-    }
-
-    public function userBlogs($userId)
-    {
-        $blogs = $this->blogService->listUserBlogs($userId);
+        $blogs = $this->queryBus->dispatch(new ListBlogsQuery(request('user_id')));
         return BlogResource::collection($blogs);
     }
 
     public function store(BlogRequest $request)
     {
-        $blog = $this->blogService->createBlog($request->validated());
+        $blog = $this->commandBus->dispatch(new CreateBlogCommand($request->validated()));
         return new BlogResource($blog);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
-        $blog = $this->blogService->showBlog($id);
+        $blog = $this->queryBus->dispatch(new ShowBlogQuery($id));
         return new BlogResource($blog);
     }
 
-    public function update(BlogRequest $request, $id)
+    public function update(BlogRequest $request, int $id)
     {
-        $blog = $this->blogService->showBlog($id);
-
-        if (!Gate::allows('update', $blog)) {
-            abort(403, 'Unauthorized');
-        }
-
-        $updatedBlog = $this->blogService->updateBlog($id, $request->validated());
-        return new BlogResource($updatedBlog);
+        $blog = $this->commandBus->dispatch(new UpdateBlogCommand($id, $request->validated()));
+        return new BlogResource($blog);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $blog = $this->blogService->showBlog($id);
-
-        if (!Gate::allows('delete', $blog)) {
-            abort(403, 'Unauthorized');
-        }
-
-        $this->blogService->deleteBlog($id);
-        return response()->json(['message' => 'Blog deleted successfully.']);
+        $this->commandBus->dispatch(new DeleteBlogCommand($id));
+        return response()->json(['message' => 'Blog deleted successfully']);
     }
 }

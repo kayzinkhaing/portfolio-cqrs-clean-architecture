@@ -2,7 +2,7 @@
 import { api, withCsrf } from './axios'
 import { ROUTES } from './routes'
 import type { AxiosResponse } from 'axios'
-import type { Blog, BlogData, BlogResponse } from './types'
+import type { Blog, BlogData, BlogResponse } from '../api/types'
 
 // Blog API methods
 export const getBlogs = (params?: { page?: number; cursor?: string }): Promise<AxiosResponse<BlogResponse>> =>

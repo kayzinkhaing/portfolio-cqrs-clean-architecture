@@ -8,17 +8,14 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 
 const app = createApp(App)
 
-// setup pinia first
 const pinia = createPinia()
 app.use(pinia)
-
-// add plugins
 app.use(router)
 app.use(VueQueryPlugin)
 
 const auth = useAuthStore()
 
-// Wait for auth initialization before mounting app
+// CQRS: fetch current user before app mounts
 auth.initialize().finally(() => {
   app.mount('#app')
 })

@@ -2,30 +2,16 @@
 
 namespace App\Repositories;
 
-use App\Contracts\BaseInterface;
-use App\Models\Blog;
+use App\Contracts\BlogRepositoryInterface;
 
-class BlogRepository extends BaseRepository implements BaseInterface
+class BlogRepository extends BaseRepository implements BlogRepositoryInterface
 {
     public function __construct()
     {
-        parent::__construct('Blog');
+        parent::__construct('Blog'); // dynamic binding to App\Models\Blog
     }
-
-    public function getAllWithUser(?int $userId = null)
+    public function getByUser(int $userId)
     {
-        return $this->currentModel
-                    ->when($userId, fn($query) => $query->where('user_id', $userId))
-                    ->with('user:id,name')
-                    ->latest()
-                    ->cursorPaginate(10);
-    }
-
-    public function getByUser($userId)
-    {
-        return $this->currentModel
-                    ->where('user_id', $userId)
-                    ->latest()
-                    ->cursorPaginate(10);
+        return $this->currentModel->where('user_id', $userId)->get();
     }
 }

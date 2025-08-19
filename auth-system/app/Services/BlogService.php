@@ -2,46 +2,66 @@
 
 namespace App\Services;
 
-use App\Repositories\BlogRepository;
+use App\Contracts\BlogRepositoryInterface;
+use App\Contracts\BlogReadRepositoryInterface;
+use App\Jobs\SyncBlogToReadModel;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Blog;
 
 class BlogService
 {
-    protected BlogRepository $blogRepo;
+    protected BlogRepositoryInterface $blogRepo;
+    protected BlogReadRepositoryInterface $readRepo;
 
-    public function __construct(BlogRepository $blogRepo)
-    {
+    public function __construct(
+        BlogRepositoryInterface $blogRepo,
+        BlogReadRepositoryInterface $readRepo
+    ) {
         $this->blogRepo = $blogRepo;
+        $this->readRepo = $readRepo;
     }
 
+    // ------------------
+    // READ (Mongo)
+    // ------------------
     public function listBlogs(?int $userId = null)
     {
-        return $this->blogRepo->getAllWithUser($userId);
+        return $userId
+            ? $this->readRepo->getByUser($userId)
+            : $this->readRepo->getAll();
     }
 
-    public function listUserBlogs($userId)
+    public function listUserBlogs(int $userId)
     {
-        return $this->blogRepo->getByUser($userId);
+        return $this->readRepo->getByUser($userId);
     }
 
-    public function createBlog(array $data)
+    public function showBlog(int $blogId)
+    {
+        return $this->readRepo->findById($blogId);
+    }
+
+    // ------------------
+    // WRITE (MySQL + async Mongo sync)
+    // ------------------
+    public function createBlog(array $data): Blog
     {
         $data['user_id'] = Auth::id();
-        return $this->blogRepo->create($data);
+        $blog = $this->blogRepo->create($data);
+        SyncBlogToReadModel::dispatch($blog->id); // async update Mongo
+        return $blog;
     }
 
-    public function updateBlog($blogId, array $data)
+    public function updateBlog(int $blogId, array $data): Blog
     {
-        return $this->blogRepo->update($blogId, $data);
+        $blog = $this->blogRepo->update($blogId, $data);
+        SyncBlogToReadModel::dispatch($blog->id); // async update Mongo
+        return $blog;
     }
 
-    public function deleteBlog($blogId)
+    public function deleteBlog(int $blogId): void
     {
-        return $this->blogRepo->delete($blogId);
-    }
-
-    public function showBlog($blogId)
-    {
-        return $this->blogRepo->findById($blogId, ['user']);
+        $this->blogRepo->delete($blogId);
+        $this->readRepo->delete($blogId);
     }
 }

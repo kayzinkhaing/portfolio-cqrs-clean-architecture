@@ -1,47 +1,37 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
-use App\Models\Ward;
-use App\Models\Township;
-use Illuminate\Http\Request;
-use App\Services\UserService;
+use App\Application\Buses\QueryBus;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Application\Buses\CommandBus;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateProfileRequest;
-
+use App\Application\Commands\LoginUserCommand;
+use App\Application\Commands\LogoutUserCommand;
+use App\Application\Queries\GetUserProfileQuery;
+use App\Application\Commands\RegisterUserCommand;
+use App\Application\Commands\UpdateProfileCommand;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 class AuthController extends Controller
 {
-    protected UserService $userService;
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
 
-    public function __construct(UserService $userService)
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        $this->userService = $userService;
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
-
-    // public function profile(Request $request)
-    // {
-    //     return new UserResource($request->user()->load(['township', 'ward']));
-    // }
-
-    public function profile(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => new UserResource($request->user()->load(['township', 'ward'])),
-            ]
-        ]);
-    }
-
 
     public function register(RegisterRequest $request)
     {
-        $result = $this->userService->register($request->validated());
+        $result = $this->commandBus->dispatch(
+            new RegisterUserCommand($request->validated())
+        );
 
-        // Load township and ward after creating user
         $user = $result['user']->load(['township', 'ward']);
 
         return response()->json([
@@ -55,11 +45,13 @@ class AuthController extends Controller
         ], 201);
     }
 
-
-
     public function login(LoginRequest $request)
     {
-        $result = $this->userService->login($request->validated());
+        $data = $request->validated();
+
+        $result = $this->commandBus->dispatch(
+            new LoginUserCommand($data['email'], $data['password'])
+        );
 
         return response()->json([
             'success' => true,
@@ -72,20 +64,43 @@ class AuthController extends Controller
         ]);
     }
 
+
+   public function profile(Request $request): JsonResponse
+    {
+        // Dispatch the query through the query bus
+        $user = $this->queryBus->dispatch(
+            new GetUserProfileQuery($request->user())
+        );
+
+        // Wrap the result in a resource and return consistent API response
+        return response()->json([
+            'success' => true,
+            'message' => 'User profile retrieved successfully',
+            'data' => [
+                'user' => new UserResource($user),
+            ],
+        ]);
+    }
+
+
     public function updateProfile(UpdateProfileRequest $request)
     {
-        $user = $this->userService->updateProfile($request->user(), $request->validated());
+        $user = $this->commandBus->dispatch(
+            new UpdateProfileCommand($request->user(), $request->validated())
+        );
 
         return response()->json([
             'success' => true,
             'message' => 'Profile updated successfully!',
-            'data'    => new UserResource($user),
+            'data' => new UserResource($user),
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->commandBus->dispatch(
+            new LogoutUserCommand($request->user())
+        );
 
         return response()->json([
             'success' => true,

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\UserRepositoryInterface;
+use App\Jobs\SyncUserToReadModel;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -17,8 +18,15 @@ class UserService
 
     public function register(array $data)
     {
+        // Hash the password
         $data['password'] = Hash::make($data['password']);
+
+        // Create user in MySQL
         $user = $this->userRepo->create($data);
+
+        // Dispatch CQRS job to sync user to MongoDB read model
+        SyncUserToReadModel::dispatch($user->id);
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
@@ -47,6 +55,25 @@ class UserService
 
     public function updateProfile($user, array $data)
     {
-        return $this->userRepo->update($user->id, $data);
+        // Hash password only if provided
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']); // prevent overwriting with null
+        }
+
+        // Update user via repository
+        $updatedUser = $this->userRepo->update($user->id, $data);
+
+        // Load township & ward relationships
+        return $updatedUser->load(['township', 'ward']);
     }
+    public function logout($user)
+    {
+        // Revoke all tokens for this user
+        $user->tokens()->delete();
+
+        return true;
+    }
+
 }

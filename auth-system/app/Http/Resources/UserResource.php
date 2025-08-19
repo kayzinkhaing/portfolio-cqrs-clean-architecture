@@ -12,8 +12,18 @@ class UserResource extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'email'      => $this->email,
-            'township'   => $this->whenLoaded('township'),
-            'ward'       => $this->whenLoaded('ward'),
+            'township'   => $this->whenLoaded('township', function () {
+                return [
+                    'id'   => $this->township->id,
+                    'name' => $this->township->name,
+                ];
+            }),
+            'ward'       => $this->whenLoaded('ward', function () {
+                return [
+                    'id'   => $this->ward->id,
+                    'name' => $this->ward->name,
+                ];
+            }),
             'created_at' => $this->created_at,
         ];
     }

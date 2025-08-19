@@ -3,18 +3,11 @@
 namespace App\Repositories;
 
 use App\Contracts\BaseInterface;
-use App\Models\Role;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\RedirectResponse;
 use App\Traits\Media;
-use Illuminate\Support\Facades\Storage;
 
-/** The repository is responsible for managing data operations
- * and interactions with the database. */
-
-
-class BaseRepository implements baseInterface
+class BaseRepository implements BaseInterface
 {
     public Model $currentModel;
     protected $currentTable;
@@ -33,10 +26,8 @@ class BaseRepository implements baseInterface
     {
         $images = $data['image'] ?? null;
         $video = $data['video'] ?? null;
-        $document = $data['document'] ?? null;   // single document file
-        $charityId = $data['charity_id'] ?? null;
 
-        unset($data['image'], $data['video'], $data['document'], $data['charity_id']);
+        unset($data['image'], $data['video']);
         // dd($this->currentModel);
 
         $model = $this->currentModel->create($data);
@@ -55,7 +46,6 @@ class BaseRepository implements baseInterface
             $this->attachMedia($model, $video, 'video');
         }
 
-
         return $model;
     }
 
@@ -64,10 +54,8 @@ class BaseRepository implements baseInterface
         // dd($data);
         $images = $data['image'] ?? null;
         $video = $data['video'] ?? null;
-        $document = $data['document'] ?? null;   // single document file
-        $charityId = $data['charity_id'] ?? null;
 
-        unset($data['image'], $data['video'], $data['document'], $data['charity_id']);
+        unset($data['image'], $data['video']);
         // dd($data);
         $model = $this->currentModel->find($id);
         $model->update($data);
@@ -88,24 +76,16 @@ class BaseRepository implements baseInterface
         return $model;
     }
 
-
-
-
     public function delete(int $id)
     {
         return $this->currentModel->destroy($id);
     }
 
-    // public function all()
-    // {
-    //     return $this->currentModel->all();
-    // }
     // Get all records with optional eager loading
     public function all(array $with = []): Collection
     {
         return $this->currentModel->with($with)->get();
     }
-
 
     // Additional common methods like find, create, etc.
     public function findById($id, array $with = []): ?Model
@@ -116,8 +96,6 @@ class BaseRepository implements baseInterface
         // dd($this->currentModel->with($with)->find($id));
         return $this->currentModel->with($with)->find($id);
     }
-
-
 
     public function findByName($name)
     {

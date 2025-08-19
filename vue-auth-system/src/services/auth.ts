@@ -1,7 +1,7 @@
 //C:\xampp\htdocs\vue-testing-project\vue-auth-system\src\services\auth.ts
 import { api, withCsrf } from './axios'
 import { ROUTES } from './routes'
-import type { RegisterData, LoginData, AuthResponse, User } from './types'
+import type { RegisterData, LoginData, AuthResponse, User } from '../api/types'
 import type { AxiosResponse } from 'axios'
 
 // ------------------ AUTH ------------------

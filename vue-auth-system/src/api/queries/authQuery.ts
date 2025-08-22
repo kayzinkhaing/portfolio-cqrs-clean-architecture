@@ -1,11 +1,9 @@
 // src/api/queries/authQuery.ts
-import { gql } from '@apollo/client'
+import { gql } from '@apollo/client/core'
 import { gqlClient } from '../gql/client'
 import type { User } from '../types'
 
-// -------------------------
-// GraphQL Query: Get Current User
-// -------------------------
+// GraphQL Query
 const GET_CURRENT_USER = gql`
   query GetCurrentUser {
     currentUser {
@@ -27,10 +25,7 @@ const GET_CURRENT_USER = gql`
   }
 `
 
-// -------------------------
 // Function to fetch current user
-// -------------------------
-// src/api/queries/authQuery.ts
 export const getProfileUser = async (): Promise<User | null> => {
   try {
     const { data } = await gqlClient.query<{ currentUser: User }>({
@@ -43,4 +38,3 @@ export const getProfileUser = async (): Promise<User | null> => {
     return null
   }
 }
-

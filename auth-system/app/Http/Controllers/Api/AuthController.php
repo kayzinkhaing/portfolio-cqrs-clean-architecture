@@ -28,6 +28,8 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
+        // dd($request);
+        // exit;
         $result = $this->commandBus->dispatch(
             new RegisterUserCommand($request->validated())
         );

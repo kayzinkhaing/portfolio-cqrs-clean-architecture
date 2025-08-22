@@ -14,6 +14,13 @@ class SyncUserToReadModel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected int $userId;
+
+    public function __construct(int $userId)
+    {
+        $this->userId = $userId;
+    }
+
     public function handle()
     {
         // Connect to MongoDB
@@ -21,12 +28,18 @@ class SyncUserToReadModel implements ShouldQueue
         $db = $mongo->selectDatabase('read_model');
         $collection = $db->selectCollection('users');
 
-        // Fetch all users from MySQL
-        User::chunk(100, function ($users) use ($collection) {
-            foreach ($users as $user) {
-                $collection->updateOne(
-                ['id' => $user->id],
-                ['$set' => [
+        // Fetch only this user
+        $user = User::with(['township', 'ward'])->find($this->userId);
+
+        if (!$user) {
+            return; // User not found
+        }
+
+        // Sync single user
+        $collection->updateOne(
+            ['id' => $user->id],
+            [
+                '$set' => [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
@@ -45,11 +58,9 @@ class SyncUserToReadModel implements ShouldQueue
                     ] : null,
                     'created_at' => $user->created_at?->toDateTimeString(),
                     'updated_at' => $user->updated_at?->toDateTimeString(),
-                ]],
-                ['upsert' => true]
-            );
-
-            }
-        });
+                ]
+            ],
+            ['upsert' => true]
+        );
     }
 }

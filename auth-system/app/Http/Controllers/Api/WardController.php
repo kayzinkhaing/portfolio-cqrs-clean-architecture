@@ -5,44 +5,78 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WardRequest;
 use App\Http\Resources\WardResource;
-use App\Services\WardService;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
+use App\Application\Commands\CreateWardCommand;
+use App\Application\Commands\UpdateWardCommand;
+use App\Application\Commands\DeleteWardCommand;
+use App\Application\Queries\GetWardQuery;
+use App\Application\Queries\ListWardsQuery;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WardController extends Controller
 {
-    protected WardService $wardService;
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
 
-    public function __construct(WardService $wardService)
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        $this->wardService = $wardService;
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
-        $wards = $this->wardService->listAll();
-        return WardResource::collection($wards);
+        $wards = $this->queryBus->dispatch(new ListWardsQuery());
+
+        return response()->json([
+            'success' => true,
+            'data' => WardResource::collection($wards),
+        ]);
     }
 
-    public function store(WardRequest $request)
+    public function store(WardRequest $request): JsonResponse
     {
-        $ward = $this->wardService->create($request->validated());
-        return new WardResource($ward);
+        $ward = $this->commandBus->dispatch(
+            new CreateWardCommand($request->validated())
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => new WardResource($ward),
+        ], 201);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
-        $ward = $this->wardService->show($id);
-        return new WardResource($ward);
+        $ward = $this->queryBus->dispatch(new GetWardQuery($id));
+
+        return response()->json([
+            'success' => true,
+            'data' => new WardResource($ward),
+        ]);
     }
 
-    public function update(WardRequest $request, $id)
+    public function update(WardRequest $request, $id): JsonResponse
     {
-        $ward = $this->wardService->update($id, $request->validated());
-        return new WardResource($ward);
+        $ward = $this->commandBus->dispatch(
+            new UpdateWardCommand($id, $request->validated())
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => new WardResource($ward),
+        ]);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
-        $this->wardService->delete($id);
-        return response()->json(null, 204);
+        $this->commandBus->dispatch(new DeleteWardCommand($id));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ward deleted successfully',
+        ], 204);
     }
 }

@@ -22,14 +22,14 @@ class RegisterUserHandler
 }
 
 // app/Application/Handlers/GetUserProfileHandler.php
-namespace App\Application\Handlers;
+// namespace App\Application\Handlers;
 
-use App\Application\Queries\GetUserProfileQuery;
+// use App\Application\Queries\GetUserProfileQuery;
 
-class GetUserProfileHandler
-{
-    public function handle(GetUserProfileQuery $query)
-    {
-        return $query->user->load(['township', 'ward']);
-    }
-}
+// class GetUserProfileHandler
+// {
+//     public function handle(GetUserProfileQuery $query)
+//     {
+//         return $query->user->load(['township', 'ward']);
+//     }
+// }

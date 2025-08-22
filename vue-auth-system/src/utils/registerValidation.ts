@@ -6,8 +6,8 @@ export interface RegisterForm {
   email: string
   password: string
   password_confirmation: string
-  township_id: number | string | ''
-  ward_id: number | string | ''
+  township_id: string | number | null
+  ward_id: string | number | null
 }
 
 export function validateRegisterForm(form: RegisterForm): ValidationErrors {

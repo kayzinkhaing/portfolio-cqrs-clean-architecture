@@ -1,29 +1,27 @@
-// src/api/types.ts
-
 // -------------------------
+//C:\xampp\htdocs\vue-testing-project\vue-auth-system\src\api\types.ts
 // Location Related
 // -------------------------
+// src/api/types.ts (UPDATED)
 export interface Township {
-  id: number
+  id: string
   name: string
 }
 
 export interface Ward {
-  id: number
+  id: string
   name: string
+  township_id?: string
 }
 
-// -------------------------
-// User Related
-// -------------------------
 export interface User {
-  id: number
+  id: string
   name: string
   email: string
-  township_id?: number
-  ward_id?: number
-  township?: Township   // relation with Township
-  ward?: Ward           // relation with Ward
+  township_id?: string
+  ward_id?: string
+  township?: Township | null
+  ward?: Ward | null
   created_at?: string
   updated_at?: string
   two_factor_enabled?: boolean
@@ -75,10 +73,7 @@ export interface Blog {
   created_at: string
   updated_at: string
   user_id: number | string
-  user?: { 
-    id: number | string
-    name: string 
-  } | null
+  user?: { id: number | string; name: string } | null
 }
 
 export interface BlogResponse {

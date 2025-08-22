@@ -13,4 +13,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  server: {
+    proxy: {
+      '/graphql': {
+        target: 'http://localhost:8000', // Laravel server
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

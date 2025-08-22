@@ -1,6 +1,5 @@
-// src/stores/auth.ts
 import { defineStore } from 'pinia'
-import type { User, LoginData, RegisterData, AuthResponse } from '../api/types'
+import type { User, LoginData, RegisterData } from '../api/types'
 import * as authCommand from '../api/commands/authCommand'
 import * as authQuery from '../api/queries/authQuery'
 
@@ -8,8 +7,12 @@ interface AuthState {
   user: User | null
   token: string | null
   isAuthenticated: boolean
-  loading: boolean
+  profileLoading: boolean
+  loginLoading: boolean
+  registerLoading: boolean
   error: string | null
+  initialized: boolean
+  requires2FA: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -17,14 +20,18 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     token: localStorage.getItem('token') || null,
     isAuthenticated: !!localStorage.getItem('token'),
-    loading: false,
+    profileLoading: false,
+    loginLoading: false,
+    registerLoading: false,
     error: null,
+    initialized: false,
+    requires2FA: false,
   }),
 
   actions: {
-    setLoading(value: boolean) {
-      this.loading = value
-    },
+    // -------------------------
+    // Utility methods
+    // -------------------------
     setError(message: string) {
       this.error = message
     },
@@ -35,74 +42,106 @@ export const useAuthStore = defineStore('auth', {
       this.user = user
       this.token = token
       this.isAuthenticated = true
+      this.requires2FA = user.two_factor_enabled || false
       localStorage.setItem('token', token)
+    },
+    clearAuthData() {
+      this.user = null
+      this.token = null
+      this.isAuthenticated = false
+      this.requires2FA = false
+      localStorage.removeItem('token')
     },
 
     // -------------------------
     // Register
     // -------------------------
     async register(data: RegisterData) {
-      this.setLoading(true)
+      this.registerLoading = true
       this.clearError()
-
-      const response = await authCommand.registerUser(data)
-      if (response?.data) this.setAuthData(response.data)
-      else this.setError(response?.message || 'Registration failed')
-
-      this.setLoading(false)
+      try {
+        const response = await authCommand.registerUser(data)
+        if (response?.data) {
+          this.setAuthData(response.data)
+        } else {
+          this.setError(response?.message || 'Registration failed')
+        }
+      } catch (err) {
+        console.error(err)
+        this.setError('Registration error')
+      } finally {
+        this.registerLoading = false
+      }
     },
 
     // -------------------------
     // Login
     // -------------------------
     async login(data: LoginData) {
-      this.setLoading(true)
+      this.loginLoading = true
       this.clearError()
-
-      const response = await authCommand.loginUser(data)
-      if (response?.data) this.setAuthData(response.data)
-      else this.setError(response?.message || 'Login failed')
-
-      this.setLoading(false)
+      try {
+        const response = await authCommand.loginUser(data)
+        if (response?.data) {
+          this.setAuthData(response.data)
+        } else {
+          this.setError(response?.message || 'Login failed')
+        }
+      } catch (err) {
+        console.error(err)
+        this.setError('Login error')
+      } finally {
+        this.loginLoading = false
+      }
     },
 
     // -------------------------
     // Logout
     // -------------------------
     async logout() {
-      this.setLoading(true)
       try {
         await authCommand.logoutUser()
       } catch (err) {
         console.error(err)
       } finally {
-        this.user = null
-        this.token = null
-        this.isAuthenticated = false
-        localStorage.removeItem('token')
-        this.setLoading(false)
+        this.clearAuthData()
+        this.initialized = false
       }
     },
 
     // -------------------------
-    // Fetch Profile (Query)
+    // Fetch Profile
     // -------------------------
     async fetchProfile() {
-      this.setLoading(true)
-      this.clearError()
-
-      const user = await authQuery.getProfileUser()
-      if (user) this.user = user
-      else this.setError('Failed to fetch profile')
-
-      this.setLoading(false)
-    },
+  this.profileLoading = true
+  this.clearError()
+  try {
+    const user = await authQuery.getProfileUser()
+    console.log('Fetched user:', user) // <-- debug here
+    if (user) {
+      this.user = user
+      this.isAuthenticated = true
+      this.requires2FA = user.two_factor_enabled || false
+    } else {
+      this.setError('Failed to fetch profile')
+    }
+  } catch (err) {
+    console.error('Error in fetchProfile:', err) // <-- debug here
+    this.setError('Failed to fetch profile')
+  } finally {
+    this.profileLoading = false
+  }
+}
+,
 
     // -------------------------
     // Initialize Auth
     // -------------------------
     async initialize() {
-      if (this.token) await this.fetchProfile()
+      if (this.token && !this.initialized) {
+        await this.fetchProfile()
+        this.initialized = true
+      }
     },
   },
 })

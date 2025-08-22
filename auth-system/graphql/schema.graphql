@@ -1,0 +1,67 @@
+# =====================
+# GraphQL Types
+# =====================
+
+type Township {
+  id: ID!
+  name: String!
+  wards: [Ward!]!
+}
+
+type Ward {
+  id: ID!
+  name: String!
+  township_id: ID!
+  township: Township
+  created_at: String
+  updated_at: String
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  township: Township
+  ward: Ward
+  two_factor_enabled: Boolean
+  created_at: String
+  updated_at: String
+}
+
+type Blog {
+  id: ID!
+  title: String!
+  excerpt: String
+  content: String!
+  published_at: String
+  created_at: String
+  updated_at: String
+  user: User            # 👈 embed full user info (not just user_id)
+}
+
+# =====================
+# GraphQL Queries
+# =====================
+
+type Query {
+  townships: [Township!]!
+    @field(resolver: "App\\GraphQL\\Queries\\TownshipQuery@all")
+
+  wards(township_id: ID!): [Ward!]!
+    @field(resolver: "App\\GraphQL\\Queries\\WardQuery@byTownship")
+
+  allWards: [Ward!]!
+    @field(resolver: "App\\GraphQL\\Queries\\WardQuery@all")
+
+  users: [User!]!
+    @field(resolver: "App\\GraphQL\\Queries\\UserQuery@all")
+
+  currentUser: User
+    @field(resolver: "App\\GraphQL\\Queries\\UserQuery@current")
+
+  blogs(limit: Int, search: String): [Blog!]!
+    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@all")   # 👈 match PHP
+
+  blog(id: ID!): Blog
+    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@find")  # 👈 match PHP
+}

@@ -3,27 +3,23 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Blog;
-use App\Models\BlogReadModel;
+use App\Jobs\SyncBlogToReadModel;
 
 class SyncAllBlogsCommand extends Command
 {
-    protected $signature = 'blogs:sync-all {--chunk=500}';
+    // Command signature (what you type in terminal)
+    protected $signature = 'blogs:sync-all';
+
+    // Description (shown in `php artisan list`)
     protected $description = 'Sync all MySQL blogs to MongoDB read model';
 
     public function handle()
     {
-        $chunkSize = (int) $this->option('chunk');
-        $this->info("Starting blog sync with chunk size: {$chunkSize}");
+        $this->info("Starting blog sync...");
 
-        Blog::chunk($chunkSize, function ($blogs) {
-            foreach ($blogs as $blog) {
-                BlogReadModel::updateOrCreate(
-                    ['id' => $blog->id],
-                    $blog->toArray()
-                );
-            }
-        });
+        // Run job synchronously
+        $job = new SyncBlogToReadModel();
+        $job->handle();
 
         $this->info("All blogs have been synced to MongoDB.");
         return 0;

@@ -1,16 +1,13 @@
+// src/composables/useLogin.ts
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useErrorStore } from '../stores/errorStore'
-import { useAuthStore, type Credentials } from '../stores/auth'
+import { useAuthStore } from '../stores/auth'
 import { useApiLoader } from './useApiLoader'
 import { sanitizeObject } from '../utils/sanitize'
 import { validateLoginForm } from '../utils/loginValidation'
 import { handleApiError } from '../utils/errorHandler'
-
-interface LoginForm {
-  email: string
-  password: string
-}
+import type { LoginData } from '../api/types' // ✅ use LoginData from types.ts
 
 export function useLogin() {
   const router = useRouter()
@@ -18,7 +15,7 @@ export function useLogin() {
   const auth = useAuthStore()
 
   const isLoading = ref(false)
-  const form = ref<LoginForm>({
+  const form = ref<LoginData>({
     email: '',
     password: '',
   })
@@ -30,6 +27,7 @@ export function useLogin() {
   }
 
   const handleLogin = async () => {
+    // Clear previous errors
     errorStore.clearErrors()
 
     // Validate form
@@ -41,13 +39,16 @@ export function useLogin() {
 
     try {
       await load(async () => {
-        const credentials: Credentials = sanitizeObject(form.value) as Credentials
-         // LOGIN
-      const loginRes = await auth.loginUser(credentials)
-      // console.log('Login response:', loginRes)
-      // console.log('Auth store after login:', auth)
-        // LOGIN
-        await auth.loginUser(credentials)
+        const credentials: LoginData = sanitizeObject(form.value) as LoginData
+
+        // Call Pinia auth store login action
+        await auth.login(credentials)
+
+        // Check if there was an error from the store
+        if (auth.error) {
+          errorStore.setGeneralError(auth.error)
+          return
+        }
 
         // 2FA check
         if (auth.requires2FA) {
@@ -58,10 +59,9 @@ export function useLogin() {
       }, isLoading)
     } catch (error: any) {
       handleApiError(error)
-      // Display backend message if exists
-      // if (error.response?.data?.message) {
-      //   errorStore.setGeneralMessage(error.response.data.message)
-      // }
+      if (error.response?.data?.message) {
+        errorStore.setGeneralError(error.response.data.message)
+      }
     }
   }
 

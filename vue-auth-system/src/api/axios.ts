@@ -14,7 +14,7 @@ export const commandApi: AxiosInstance = axios.create({
 // Query API (Read) - REST fallback (optional)
 // -------------------------
 export const queryApi: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000',
+  baseURL: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8000/graphql',
   withCredentials: true,
 })
 
@@ -22,7 +22,7 @@ export const queryApi: AxiosInstance = axios.create({
 // CSRF for commands
 // -------------------------
 export const getCsrfCookie = (): Promise<AxiosResponse> => {
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  const base = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
   return axios.get(`${base}${ROUTES.csrf}`, { withCredentials: true })
 }
 

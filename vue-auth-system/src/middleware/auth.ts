@@ -1,13 +1,21 @@
-// src/middleware/auth.ts
 import { useAuthStore } from '@/stores/auth'
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
-export function authGuard(
+export async function authGuard(
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const auth = useAuthStore()
+
+  // Initialize auth if not yet initialized
+  if (!auth.initialized) {
+    try {
+      await auth.initialize()
+    } catch (err) {
+      console.error('Auth initialization failed:', err)
+    }
+  }
 
   // Not logged in → redirect to login
   if (!auth.isAuthenticated) {

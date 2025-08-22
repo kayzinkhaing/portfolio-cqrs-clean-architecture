@@ -6,44 +6,83 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TownshipStoreRequest;
 use App\Http\Requests\TownshipUpdateRequest;
 use App\Http\Resources\TownshipResource;
-use App\Services\TownshipService;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
+use App\Application\Commands\CreateTownshipCommand;
+use App\Application\Commands\UpdateTownshipCommand;
+use App\Application\Commands\DeleteTownshipCommand;
+use App\Application\Queries\GetTownshipQuery;
+use App\Application\Queries\ListTownshipsQuery;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TownshipController extends Controller
 {
-    protected TownshipService $townshipService;
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
 
-    public function __construct(TownshipService $townshipService)
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        $this->townshipService = $townshipService;
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    public function index()
+    // GET /townships
+    public function index(): JsonResponse
     {
-        $townships = $this->townshipService->listAll();
-        return TownshipResource::collection($townships);
+        $townships = $this->queryBus->dispatch(new ListTownshipsQuery());
+
+        return response()->json([
+            'success' => true,
+            'data' => TownshipResource::collection($townships),
+        ]);
     }
 
-    public function store(TownshipStoreRequest $request)
+    // POST /townships
+    public function store(TownshipStoreRequest $request): JsonResponse
     {
-        $township = $this->townshipService->create($request->validated());
-        return new TownshipResource($township);
+        $township = $this->commandBus->dispatch(
+            new CreateTownshipCommand($request->validated())
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => new TownshipResource($township),
+        ], 201);
     }
 
-    public function show($id)
+    // GET /townships/{id}
+    public function show($id): JsonResponse
     {
-        $township = $this->townshipService->show($id);
-        return new TownshipResource($township);
+        $township = $this->queryBus->dispatch(new GetTownshipQuery($id));
+
+        return response()->json([
+            'success' => true,
+            'data' => new TownshipResource($township),
+        ]);
     }
 
-    public function update(TownshipUpdateRequest $request, $id)
+    // PUT/PATCH /townships/{id}
+    public function update(TownshipUpdateRequest $request, $id): JsonResponse
     {
-        $township = $this->townshipService->update($id, $request->validated());
-        return new TownshipResource($township);
+        $township = $this->commandBus->dispatch(
+            new UpdateTownshipCommand($id, $request->validated())
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => new TownshipResource($township),
+        ]);
     }
 
-    public function destroy($id)
+    // DELETE /townships/{id}
+    public function destroy($id): JsonResponse
     {
-        $this->townshipService->delete($id);
-        return response()->json(null, 204);
+        $this->commandBus->dispatch(new DeleteTownshipCommand($id));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Township deleted successfully',
+        ], 204);
     }
 }

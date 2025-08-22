@@ -1,6 +1,6 @@
 // src/utils/validation/blogValidation.ts
 
-import type { BlogForm } from '@/views/CreateBlogView.vue' // or define again here if no circular imports
+import type { BlogForm } from '@/pages/CreateBlogView.vue' // or define again here if no circular imports
 
 export function validateBlogForm(form: BlogForm): Record<string, string> {
   const errors: Record<string, string> = {}

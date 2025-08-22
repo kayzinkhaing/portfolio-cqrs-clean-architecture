@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import DynamicForm from './DynamicForm.vue'
+import DynamicForm from './forms/DynamicForm.vue'
 
 defineProps<{
   form: any

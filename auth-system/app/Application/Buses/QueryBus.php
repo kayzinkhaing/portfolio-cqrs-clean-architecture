@@ -8,9 +8,18 @@ class QueryBus
 {
     public function dispatch($query)
     {
-        $handlerClass = str_replace('Query', 'Handler', get_class($query));
+        $queryClass = get_class($query);
+
+        // Replace "Queries" with "Handlers" AND "Query" with "Handler"
+        $handlerClass = str_replace(
+            ['Queries', 'Query'],
+            ['Handlers', 'Handler'],
+            $queryClass
+        );
+
         $handler = app($handlerClass);
 
         return $handler->handle($query);
     }
 }
+

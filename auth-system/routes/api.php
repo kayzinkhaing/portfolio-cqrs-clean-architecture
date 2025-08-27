@@ -4,9 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\WardController;
+use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\TownshipController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\ProjectController;
 
 // === Public Routes ===
 Route::post('/register', [AuthController::class, 'register']);
@@ -23,6 +25,8 @@ Route::apiResource('wards', WardController::class);
 // Blog public routes
 Route::apiResource('blogs', BlogController::class)->only(['index', 'show']);
 
+Route::apiResource('statuses', StatusController::class);
+Route::apiResource('projects', ProjectController::class);
 
 // === Protected Routes (Require Authentication) ===
 Route::middleware('auth:sanctum')->group(function () {
@@ -38,5 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Blog management routes (only for logged-in users)
     Route::apiResource('blogs', BlogController::class)->only(['store', 'update', 'destroy']);
-    Route::get('/users/{user}/blogs', [BlogController::class, 'userBlogs']); 
+    Route::get('/users/{user}/blogs', [BlogController::class, 'userBlogs']);
+
+
+
+
 });

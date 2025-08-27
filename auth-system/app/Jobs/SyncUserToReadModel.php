@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
@@ -8,7 +7,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-use MongoDB\Client as MongoClient;
+use App\Services\RabbitPublisher;
 
 class SyncUserToReadModel implements ShouldQueue
 {
@@ -23,44 +22,47 @@ class SyncUserToReadModel implements ShouldQueue
 
     public function handle()
     {
-        // Connect to MongoDB
-        $mongo = new MongoClient('mongodb://mongo:27017');
-        $db = $mongo->selectDatabase('read_model');
-        $collection = $db->selectCollection('users');
-
-        // Fetch only this user
+        // Fetch user from MySQL
         $user = User::with(['township', 'ward'])->find($this->userId);
+        if (!$user) return;
 
-        if (!$user) {
-            return; // User not found
+        // Prepare payload for RabbitMQ
+        $payload = [
+            'event' => 'user.upsert',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'township' => $user->township ? [
+                    'id' => $user->township->id,
+                    'name' => $user->township->name,
+                ] : null,
+                'ward' => $user->ward ? [
+                    'id' => $user->ward->id,
+                    'name' => $user->ward->name,
+                    'township_id' => $user->ward->township_id,
+                ] : null,
+                'created_at' => $user->created_at?->toDateTimeString(),
+                'updated_at' => $user->updated_at?->toDateTimeString(),
+            ],
+            'meta' => [
+                'source' => 'write-api',
+                'action' => 'upsert',
+            ],
+        ];
+
+        // ✅ Publish to RabbitMQ if service exists
+        if (class_exists(RabbitPublisher::class)) {
+            $publisher = app(RabbitPublisher::class);
+            $publisher->publish('user.upsert', $payload);
         }
 
-        // Sync single user
-        $collection->updateOne(
-            ['id' => $user->id],
-            [
-                '$set' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'township' => $user->township ? [
-                        'id' => $user->township->id,
-                        'name' => $user->township->name,
-                        'created_at' => $user->township->created_at?->toDateTimeString(),
-                        'updated_at' => $user->township->updated_at?->toDateTimeString(),
-                    ] : null,
-                    'ward' => $user->ward ? [
-                        'id' => $user->ward->id,
-                        'name' => $user->ward->name,
-                        'township_id' => $user->ward->township_id,
-                        'created_at' => $user->ward->created_at?->toDateTimeString(),
-                        'updated_at' => $user->ward->updated_at?->toDateTimeString(),
-                    ] : null,
-                    'created_at' => $user->created_at?->toDateTimeString(),
-                    'updated_at' => $user->updated_at?->toDateTimeString(),
-                ]
-            ],
-            ['upsert' => true]
-        );
+        // Optional: fallback to direct MongoDB sync if RabbitMQ is not configured
+        // $mongo = new \MongoDB\Client('mongodb://mongo:27017');
+        // $mongo->selectDatabase('read_model')->users->updateOne(
+        //     ['id' => $user->id],
+        //     ['$set' => $payload['data']],
+        //     ['upsert' => true]
+        // );
     }
 }

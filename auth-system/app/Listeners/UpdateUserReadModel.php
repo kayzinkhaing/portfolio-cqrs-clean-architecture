@@ -13,8 +13,9 @@ class UpdateUserReadModel
 
         $mongo = new Client("mongodb://mongo:27017");
         $collection = $mongo->selectDatabase('read_model')->users;
+        $collection->drop();
 
-        $collection->insertOne([
+        $collection->updateOne([
             '_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,

@@ -34,7 +34,7 @@ class SyncTownshipToReadModel implements ShouldQueue
         // Connect to MongoDB
         $mongo = new MongoClient('mongodb://mongo:27017');
         $db = $mongo->selectDatabase('read_model');
-        $collection = $db->selectCollection('townships');
+        $collection = $db->selectCollection(collectionName: 'townships');
 
         if ($this->action === 'delete') {
             // Remove township from read model

@@ -17,6 +17,7 @@ const GET_CURRENT_USER = gql`
       ward {
         id
         name
+        township_id
       }
       two_factor_enabled
       created_at

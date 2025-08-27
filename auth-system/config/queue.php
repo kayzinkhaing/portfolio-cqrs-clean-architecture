@@ -72,38 +72,41 @@ return [
             'after_commit' => false,
         ],
         'rabbitmq' => [
-            'driver' => 'rabbitmq',
-            'queue'  => env('RABBITMQ_QUEUE', 'domain-events'),
-            'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
 
-            'hosts' => [[
-                'host'      => env('RABBITMQ_HOST', 'rabbitmq'),
-                'port'      => env('RABBITMQ_PORT', 5672),
-                'user'      => env('RABBITMQ_USER', 'guest'),
-                'password'  => env('RABBITMQ_PASSWORD', 'guest'),
-                'vhost'     => env('RABBITMQ_VHOST', '/'),
-            ]],
+    'driver' => 'rabbitmq',
 
-            'options' => [
-                'heartbeat' => 30,
-                'persistent' => true,
-                'queue' => [
-                    'exchange' => 'domain-exchange',
-                    'exchange_type' => 'topic',
-                    'exchange_routing_key' => '#',
-                    'declare_exchange' => true,
-                    'declare_rabbit_exchange' => true,
-                    'declare' => true,
-                    'passive' => false,
-                    'durable' => true,
-                    'exclusive' => false,
-                    'auto_delete' => false,
-                    'arguments' => [
-                        'x-dead-letter-exchange' => ['S', 'domain-dlx'],
-                    ],
-                ],
-            ],
+    'queue' => env('RABBITMQ_QUEUE', 'domain-events'),
+
+    'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
+
+    'hosts' => [
+        [
+            'host' => env('RABBITMQ_HOST', 'rabbitmq'),
+            'port' => env('RABBITMQ_PORT', 5672),
+            'user' => env('RABBITMQ_USER', 'guest'),
+            'password' => env('RABBITMQ_PASSWORD', 'guest'),
+            'vhost' => env('RABBITMQ_VHOST', '/'),
         ],
+    ],
+
+    'options' => [
+        'queue' => [
+            'declare' => true,
+            'durable' => true,
+        ],
+
+        'exchange' => [
+            'name' => 'domain-events-exchange',
+            'type' => 'direct',
+            'declare' => true,
+            'durable' => true,
+        ],
+    ],
+
+    'worker' => env('RABBITMQ_WORKER', 'default'),
+],
+
+
 
 
     ],

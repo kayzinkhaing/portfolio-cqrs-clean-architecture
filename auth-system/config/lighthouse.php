@@ -17,6 +17,12 @@ return [
          * The URI the endpoint responds to, e.g. mydomain.com/graphql.
          */
         'uri' => '/graphql',
+    'middleware' => [
+        \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
+        \App\Http\Middleware\GraphQLTokenAuth::class, // ✅ use this instead of AttemptAuthentication
+    ],
+        'prefix' => '',                 // no extra prefix needed
+        'name' => 'graphql',
 
         /*
          * Lighthouse creates a named route for convenient URL generation and redirects.
@@ -60,8 +66,8 @@ return [
     | Falls back to the Laravel default if `null`.
     |
     */
+    'guard' => 'sanctum',
 
-    'guards' => null,
 
     /*
     |--------------------------------------------------------------------------

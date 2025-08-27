@@ -1,4 +1,3 @@
-// src/router/index.ts
 import {
   createRouter,
   createWebHistory,
@@ -7,7 +6,7 @@ import {
   NavigationGuardNext,
 } from 'vue-router'
 
-// pages
+// Pages
 import HomeView from '@/pages/HomeView.vue'
 import BlogListView from '@/pages/BlogListView.vue'
 import LoginView from '@/pages/LoginView.vue'
@@ -26,32 +25,38 @@ interface RouteMetaWithMiddleware {
   requiresAuth?: boolean
 }
 
-// Define routes
+// Portfolio layout (lazy-loaded)
+const PortfolioLayout = () => import('@/pages/Portfolio/PortfolioLayout.vue')
+
+// Lazy-loaded portfolio pages
+const PortfolioHomeView = () => import('@/pages/Portfolio/HomeView.vue')
+const AboutView = () => import('@/pages/Portfolio/AboutView.vue')
+const SkillsView = () => import('@/pages/Portfolio/SkillsView.vue')
+const EducationView = () => import('@/pages/Portfolio/EducationView.vue')
+const WorkView = () => import('@/pages/Portfolio/WorkView.vue')
+const ExperienceView = () => import('@/pages/Portfolio/ExperienceView.vue')
+const HireMeView = () => import('@/pages/Portfolio/HireMeView.vue')
+
+// Routes
 const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
-  { path: '/', name: 'Home', component: HomeView },
-  { path: '/login', name: 'Login', component: LoginView },
-  { path: '/register', name: 'Register', component: RegisterView },
-  { path: '/blogs', name: 'BlogList', component: BlogListView },
+  // Redirect root to portfolio home
+  { path: '/', redirect: '/portfolio' },
+
+  // Auth & blog pages (leading / is required)
+  { path: '/home', name: 'Home', component: HomeView },
+  { path: '/home/login', name: 'Login', component: LoginView },
+  { path: '/home/register', name: 'Register', component: RegisterView },
+  { path: '/home/blogs', name: 'BlogList', component: BlogListView },
 
   // Protected blog routes
-  {
-    path: '/create-blog',
-    name: 'CreateBlog',
-    component: CreateBlogView,
-    meta: { middlewares: [authGuard] },
-  },
-  {
-    path: '/edit-blog/:id',
-    name: 'EditBlog',
-    component: EditBlogView,
-    meta: { middlewares: [authGuard] },
-  },
+  { path: '/create-blog', name: 'CreateBlog', component: CreateBlogView, meta: { middlewares: [authGuard] } },
+  { path: '/edit-blog/:id', name: 'EditBlog', component: EditBlogView, meta: { middlewares: [authGuard] } },
 
-// Settings (protected parent + nested children)
+  // Settings (nested)
   {
     path: '/settings',
     component: () => import('@/pages/Settings/SettingsLayout.vue'),
-    meta: { middlewares: [authGuard] }, // protect parent
+    meta: { middlewares: [authGuard] },
     children: [
       { path: 'info', name: 'SettingsInfo', component: () => import('@/pages/Settings/InformationView.vue') },
       { path: 'profile-edit', name: 'SettingsProfileEdit', component: () => import('@/pages/Settings/ProfileEdit.vue') },
@@ -59,26 +64,36 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
       { path: 'blogs', name: 'SettingsBlogs', component: () => import('@/pages/Settings/Blogs.vue') },
     ],
   },
-  
-  // Auth utilities
-  {
-    path: '/forgot-password',
-    name: 'ForgotPassword',
-    component: () => import('@/pages/ForgotPasswordView.vue'),
-  },
-  {
-    path: '/reset-password',
-    name: 'ResetPassword',
-    component: () => import('@/pages/ResetPasswordView.vue'),
-  },
 
-  // Two-Factor Auth (protected — only logged-in users should see this)
+  // Auth utilities
+  { path: '/forgot-password', name: 'ForgotPassword', component: () => import('@/pages/ForgotPasswordView.vue') },
+  { path: '/reset-password', name: 'ResetPassword', component: () => import('@/pages/ResetPasswordView.vue') },
+
+  // Two-Factor Auth
+  { path: '/2fa', name: 'TwoFactor', component: () => import('@/pages/TwoFactorView.vue'), meta: { middlewares: [authGuard] } },
+
+  // Portfolio routes (nested under layout)
   {
-    path: '/2fa',
-    name: 'TwoFactor',
-    component: () => import('@/pages/TwoFactorView.vue'),
-    meta: { middlewares: [authGuard] },
+    path: '/portfolio',
+    component: PortfolioLayout,
+    children: [
+      { path: '', name: 'PortfolioHome', component: PortfolioHomeView ,
+        meta: { title: 'Kay Zin Khaing - Full Stack Developer' }},
+      { path: 'about', name: 'About', component: AboutView , meta: { title: 'About - Kay Zin Khaing'}},
+      { path: 'skills', name: 'Skills', component: SkillsView ,
+        meta: { title: 'Skills - Kay Zin Khaing' }},
+      { path: 'education', name: 'Education', component: EducationView,
+        meta: { title: 'Education - Kay Zin Khaing' } },
+      { path: 'work', name: 'Work', component: WorkView ,
+        meta: { title: 'Projects - Kay Zin Khaing' }},
+      { path: 'experience', name: 'Experience', component: ExperienceView ,
+        meta: { title: 'Experience - Kay Zin Khaing' }},
+      { path: 'hire-me', name: 'HireMe', component: HireMeView ,
+        meta: { title: 'Hire Me - Kay Zin Khaing' }},
+    ],
+    
   },
+  
 ]
 
 // Create router
@@ -87,13 +102,11 @@ const router = createRouter({
   routes,
 })
 
-// Global middleware handler
+// Global middleware
 router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  // Collect middlewares from all matched routes (parent + child)
   const middlewareList = to.matched.flatMap(
     (r) => (r.meta as RouteMetaWithMiddleware)?.middlewares || []
   )
-
   if (middlewareList.length > 0) {
     applyMiddleware(middlewareList, to, from, next)
   } else {
@@ -102,4 +115,3 @@ router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, n
 })
 
 export default router
-

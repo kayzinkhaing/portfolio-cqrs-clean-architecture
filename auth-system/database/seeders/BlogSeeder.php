@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Blog;
-
+use App\Models\User;
 class BlogSeeder extends Seeder
 {
     /**
@@ -13,10 +13,10 @@ class BlogSeeder extends Seeder
      */
     public function run(): void
     {
-        $userIds = \App\Models\User::pluck('id')->toArray();
+        $userIds = User::pluck('id')->toArray();
 
         Blog::factory()
-            ->count(1000)
+            ->count(10)
             ->create([
                 'user_id' => fn() => fake()->randomElement($userIds),
             ]);

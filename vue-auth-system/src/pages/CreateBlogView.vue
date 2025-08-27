@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { createBlog } from '../services/blog'
+import { createBlog } from '../api/commands/blogCommand'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import DynamicForm from '@/components/forms/DynamicForm.vue'
 import { validateBlogForm } from '../utils/blogValidation'

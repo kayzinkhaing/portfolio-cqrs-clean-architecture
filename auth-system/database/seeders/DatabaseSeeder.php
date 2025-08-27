@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,19 +13,35 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Seed Townships first
-        $this->call(\Database\Seeders\TownshipSeeder::class);
+        $this->call(TownshipSeeder::class);
 
         // 2. Seed Wards after townships
-        $this->call(\Database\Seeders\WardSeeder::class);
+        $this->call(WardSeeder::class);
 
         // 3. Seed 10,000 Users after wards and townships exist
-        $this->call(\Database\Seeders\UserSeeder::class);
-        $this->call(\Database\Seeders\BlogSeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(BlogSeeder::class);
 
-        // 4. Create a test user for blogs 
-        $user = \App\Models\User::factory()->create([
+        // 4. Create a test user for blogs
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+
+        $this->call([
+            StatusSeeder::class,
+            TechnologySeeder::class,
+            SkillCategorySeeder::class,
+            SkillSeeder::class,
+            ProjectSeeder::class,
+            EducationSeeder::class,
+            ExperienceSeeder::class,
+            TimelineItemSeeder::class,
+            ContactMessageSeeder::class,
+            TestimonialSeeder::class,
+            PageSeeder::class,
+            SettingSeeder::class,
+            // ImageSeeder is optional if already attached in ProjectSeeder
         ]);
 
     }

@@ -63,6 +63,7 @@ return [
         ],
           'mongodb' => [
             'driver'   => 'mongodb',
+            'dsn' => env('MONGODB_URI', 'mongodb://mongo:27017'),
             'host'     => env('MONGO_DB_HOST', 'mongo'),
             'port'     => env('MONGO_DB_PORT', 27017),
             'database' => env('MONGO_DB_DATABASE', 'read_model'),

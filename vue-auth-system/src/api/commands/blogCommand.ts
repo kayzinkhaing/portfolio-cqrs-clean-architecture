@@ -11,7 +11,7 @@ export const createBlog = async (data: BlogData): Promise<Blog | null> => {
     const response = await withCsrf(() => commandApi.post<Blog>(ROUTES.blogs.list, data))
     return response.data
   } catch (error) {
-    console.error('Error creating blog:', error)
+    console.error('Error creating blog:', error)//line14
     return null
   }
 }

@@ -16,6 +16,8 @@
     "@apollo/client": "^3.13.9",
     "@heroicons/vue": "^2.2.0",
     "@tanstack/vue-query": "^5.83.1",
+    "@tsparticles/engine": "^3.9.1",
+    "@tsparticles/vue3": "^3.0.1",
     "@vee-validate/yup": "^4.15.1",
     "@vue/apollo-composable": "^4.2.2",
     "axios": "^1.11.0",
@@ -24,8 +26,10 @@
     "graphql": "^16.11.0",
     "jwt-decode": "^4.0.0",
     "pinia": "^2.3.1",
+    "tsparticles": "^3.9.1",
     "vee-validate": "^4.15.1",
     "vue-router": "^4.5.1",
+    "vue3-lazyload": "^0.3.8",
     "yup": "^1.7.0"
   },
   "devDependencies": {

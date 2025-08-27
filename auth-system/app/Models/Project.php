@@ -38,20 +38,20 @@ class Project extends Model
     ];
 
     // relationships
+    // public function technologies()
+    // {
+    //     return $this->belongsToMany(Technology::class, 'project_technology');
+    // }
+
     public function technologies()
     {
-        return $this->belongsToMany(Technology::class, 'project_technology');
+        return $this->belongsToMany(
+            Technology::class,
+            'project_technology'
+        )->using(ProjectTechnology::class)
+        ->withTimestamps();
     }
 
-    public function status()
-    {
-        return $this->belongsTo(Status::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
     protected static function boot()
     {
         parent::boot();
@@ -62,6 +62,16 @@ class Project extends Model
             }
         });
     }
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+
 
 
     // images available via HasImages trait ($project->images(), $project->primaryImage())

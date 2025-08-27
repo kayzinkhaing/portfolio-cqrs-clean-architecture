@@ -9,6 +9,7 @@ class CrudCommandHandler
     public function handle(CrudCommand $command)
     {
         $service = new CrudService($command->model);
+        // dd($service);
         $action = $command->action;
         $data = $command->data;
 

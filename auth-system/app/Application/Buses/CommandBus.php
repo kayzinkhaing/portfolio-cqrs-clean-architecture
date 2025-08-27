@@ -5,6 +5,7 @@ class CommandBus
 {
     public function dispatch($command)
     {
+        // dd($command);
         $commandClass = get_class($command); // e.g., App\Application\Commands\CrudCommand
         $short = class_basename($commandClass); // CrudCommand
         $handlerClass = $this->resolveHandlerClass(shortName: $short);
@@ -14,6 +15,7 @@ class CommandBus
         }
 
         $handler = app($handlerClass);
+        // dd($handler);
         return $handler->handle($command);
     }
 

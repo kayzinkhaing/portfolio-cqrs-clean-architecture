@@ -1,43 +1,44 @@
 <?php
+
 namespace App\Repositories;
 
-use App\Models\Project;
-use Illuminate\Database\Eloquent\Collection;
-
-class ProjectRepository
+class ProjectRepository extends BaseRepository
 {
-    protected Project $model;
-
-    public function __construct(Project $model)
+    public function __construct()
     {
-        $this->model = $model;
+        parent::__construct(modelName: 'Project');
     }
 
-    public function all(): Collection
+    public function createWithRelations(array $data)
     {
-        return $this->model->all();
+        // take out technologies from payload
+        $techIds = $data['technology_ids'] ?? [];
+        unset($data['technology_ids']);
+
+        // create project using BaseRepository::create()
+        $project = parent::create($data);
+
+        // sync technologies if provided
+        if (!empty($techIds)) {
+            $this->syncOrDetachRelationship($project, 'technologies', $techIds, true);
+        }
+
+        return $project->load('technologies');
     }
 
-    public function findById(int $id): ?Project
+    public function updateWithRelations(int $id, array $data)
     {
-        return $this->model->find($id);
-    }
+        $techIds = $data['technology_ids'] ?? [];
+        unset($data['technology_ids']);
 
-    public function create(array $data): Project
-    {
-        return $this->model->create($data);
-    }
+        // update base fields
+        $project = parent::update($id, $data);
 
-    public function update(int $id, array $data): Project
-    {
-        $project = $this->model->findOrFail($id);
-        $project->update($data);
-        return $project;
-    }
+        // sync pivot
+        if (!empty($techIds)) {
+            $this->syncOrDetachRelationship($project, 'technologies', $techIds, true);
+        }
 
-    public function delete(int $id): bool
-    {
-        $project = $this->model->findOrFail($id);
-        return $project->delete();
+        return $project->load('technologies');
     }
 }

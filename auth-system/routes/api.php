@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TownshipController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TechnologyController;
 
 // === Public Routes ===
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,6 +28,7 @@ Route::apiResource('blogs', BlogController::class)->only(['index', 'show']);
 
 Route::apiResource('statuses', StatusController::class);
 Route::apiResource('projects', ProjectController::class);
+Route::apiResource('technologies', TechnologyController::class);
 
 // === Protected Routes (Require Authentication) ===
 Route::middleware('auth:sanctum')->group(function () {

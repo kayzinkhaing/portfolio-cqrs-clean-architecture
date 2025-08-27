@@ -1,50 +1,71 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
 use App\Http\Controllers\Controller;
-use App\Models\Technology;
+use App\Http\Requests\StoreTechnologyRequest;
+use App\Http\Requests\UpdateTechnologyRequest;
+use App\Http\Resources\TechnologyResource;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
 use Illuminate\Http\Request;
 
 class TechnologyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
+
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        //
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        $result = $this->queryBus->dispatch(
+            new CrudQuery('Technology', 'list', $request->all())
+        );
+
+        return TechnologyResource::collection($result);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Technology $technology)
+    public function store(StoreTechnologyRequest $request)
     {
-        //
+        $technology = $this->commandBus->dispatch(
+            new CrudCommand('Technology', 'create', $request->validated())
+        );
+
+        return new TechnologyResource($technology);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Technology $technology)
+    public function show($id)
     {
-        //
+        $technology = $this->queryBus->dispatch(
+            new CrudQuery('Technology', 'get', ['id' => (int)$id])
+        );
+
+        return new TechnologyResource($technology);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Technology $technology)
+    public function update(UpdateTechnologyRequest $request, $id)
     {
-        //
+        $payload = array_merge(['id' => (int)$id], $request->validated());
+
+        $technology = $this->commandBus->dispatch(
+            new CrudCommand('Technology', 'update', $payload)
+        );
+
+        return new TechnologyResource($technology);
+    }
+
+    public function destroy($id)
+    {
+        $this->commandBus->dispatch(
+            new CrudCommand('Technology', 'delete', ['id' => (int)$id])
+        );
+
+        return response()->json(['success' => true, 'message' => 'Technology deleted']);
     }
 }

@@ -10,6 +10,8 @@ class CrudCommand
 
     public function __construct(string $model, string $action, array $data = [])
     {
+        // dd($model);
+        // dd($data);
         $this->model = $model;
         $this->action = $action;
         $this->data = $data;

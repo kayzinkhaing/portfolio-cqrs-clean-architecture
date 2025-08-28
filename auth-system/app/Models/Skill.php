@@ -13,10 +13,8 @@ class Skill extends Model
     protected $fillable = [
         'skill_category_id',
         'name',
-        'level', // 0-100
+        'level',
         'icon',
-        'description',
-        'order',
     ];
 
     protected $casts = [

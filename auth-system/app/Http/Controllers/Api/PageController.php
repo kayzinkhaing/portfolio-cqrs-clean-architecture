@@ -3,48 +3,48 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Page;
-use Illuminate\Http\Request;
+use App\Http\Requests\StorePageRequest;
+use App\Http\Requests\UpdatePageRequest;
+use App\Http\Resources\PageResource;
+use App\Repositories\PageRepository;
+use Illuminate\Http\JsonResponse;
 
 class PageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected PageRepository $repository;
+
+    public function __construct(PageRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public function index()
     {
-        //
+        $pages = $this->repository->all();
+        return PageResource::collection($pages);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StorePageRequest $request)
     {
-        //
+        $page = $this->repository->create($request->validated());
+        return new PageResource($page);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Page $page)
+    public function show(int $id)
     {
-        //
+        $page = $this->repository->find($id);
+        return new PageResource($page);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Page $page)
+    public function update(UpdatePageRequest $request, int $id)
     {
-        //
+        $page = $this->repository->update($id, $request->validated());
+        return new PageResource($page);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Page $page)
+    public function destroy(int $id): JsonResponse
     {
-        //
+        $this->repository->delete($id);
+        return response()->json(['success' => true, 'message' => 'Page deleted']);
     }
 }

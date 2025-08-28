@@ -3,13 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\WardController;
+use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\StatusController;
-use App\Http\Controllers\Api\TownshipController;
-use App\Http\Controllers\Api\TwoFactorController;
-use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TownshipController;
+use App\Http\Controllers\Api\EducationController;
+use App\Http\Controllers\Api\TwoFactorController;
+use App\Http\Controllers\Api\ExperienceController;
 use App\Http\Controllers\Api\TechnologyController;
+use App\Http\Controllers\Api\TestimonialController;
+use App\Http\Controllers\Api\TimelineItemController;
+use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\SkillCategoryController;
 
 // === Public Routes ===
 Route::post('/register', [AuthController::class, 'register']);
@@ -29,6 +36,19 @@ Route::apiResource('blogs', BlogController::class)->only(['index', 'show']);
 Route::apiResource('statuses', StatusController::class);
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('technologies', TechnologyController::class);
+Route::apiResource('skill-cat', SkillCategoryController::class);
+Route::apiResource('skills', SkillController::class);
+Route::apiResource('testimonials', TestimonialController::class);
+Route::apiResource('timeline-items', TimelineItemController::class);
+Route::apiResource('pages', PageController::class);
+Route::apiResource('educations', EducationController::class);
+Route::apiResource('experiences', ExperienceController::class);
+
+
+
+
+
+
 
 // === Protected Routes (Require Authentication) ===
 Route::middleware('auth:sanctum')->group(function () {

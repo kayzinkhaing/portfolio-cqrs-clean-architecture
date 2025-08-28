@@ -8,13 +8,13 @@ use App\Traits\HasImages;
 
 class Testimonial extends Model
 {
-    use HasFactory, HasImages;
+use HasFactory, HasImages;
 
     protected $fillable = [
         'name',
         'position',
         'company',
-        'message',
+        'testimonial',
         'is_active',
     ];
 

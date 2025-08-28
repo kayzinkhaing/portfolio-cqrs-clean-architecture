@@ -83,7 +83,9 @@ class CrudService
     //         ->onQueue('domain-events');
     // }
     protected function dispatchSyncJob(int $id, string $action = 'update')
+
     {
+        
         $modelClass = "App\\Models\\{$this->modelName}";
 
         SyncToReadModelJob::dispatch(

@@ -1,50 +1,73 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
 use App\Http\Controllers\Controller;
-use App\Models\SkillCategory;
+use App\Http\Requests\StoreSkillCategoryRequest;
+use App\Http\Requests\UpdateSkillCategoryRequest;
+use App\Http\Resources\SkillCategoryResource;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
 use Illuminate\Http\Request;
 
 class SkillCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
+
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        //
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        $result = $this->queryBus->dispatch(
+            new CrudQuery('SkillCategory', 'list', $request->all())
+        );
+
+        return SkillCategoryResource::collection($result);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(SkillCategory $skillCategory)
+    public function store(StoreSkillCategoryRequest $request)
     {
-        //
+        // dd("here");
+        // dd($request->all());
+        $skillCategory = $this->commandBus->dispatch(
+            new CrudCommand('SkillCategory', 'create', $request->validated())
+        );
+
+        return new SkillCategoryResource($skillCategory);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, SkillCategory $skillCategory)
+    public function show($id)
     {
-        //
+        $skillCategory = $this->queryBus->dispatch(
+            new CrudQuery('SkillCategory', 'get', ['id' => (int)$id])
+        );
+
+        return new SkillCategoryResource($skillCategory);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(SkillCategory $skillCategory)
+    public function update(UpdateSkillCategoryRequest $request, $id)
     {
-        //
+        $payload = array_merge(['id' => (int)$id], $request->validated());
+
+        $skillCategory = $this->commandBus->dispatch(
+            new CrudCommand('SkillCategory', 'update', $payload)
+        );
+
+        return new SkillCategoryResource($skillCategory);
+    }
+
+    public function destroy($id)
+    {
+        $this->commandBus->dispatch(
+            new CrudCommand('SkillCategory', 'delete', ['id' => (int)$id])
+        );
+
+        return response()->json(['success' => true, 'message' => 'Skill Category deleted']);
     }
 }

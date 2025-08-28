@@ -14,14 +14,14 @@ class Experience extends Model
         'user_id',
         'position',
         'company',
-        'company_url',
+        // 'company_url',
         'location',
         'start_date',
         'end_date',
-        'is_current',
+        // 'is_current',
         'responsibilities',
-        'description',
-        'order',
+        // 'description',
+        // 'order',
     ];
 
     protected $casts = [

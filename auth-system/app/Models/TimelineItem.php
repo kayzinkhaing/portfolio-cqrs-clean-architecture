@@ -18,7 +18,6 @@ class TimelineItem extends Model
         'start_date',
         'end_date',
         'year',
-        'order',
     ];
 
     protected $casts = [

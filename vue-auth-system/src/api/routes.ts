@@ -22,5 +22,17 @@ export const ROUTES = {
     townships: '/townships',
     wards: '/wards',
   },
+    statuses: {
+    list: '/statuses',
+    item: (id: number | string) => `/statuses/${id}`,
+  },
+    technologies: {
+    list: '/technologies',
+    item: (id: number | string) => `/technologies/${id}`,
+  },
+  projects: {
+    list: '/projects',
+    item: (id: number | string) => `/projects/${id}`,
+  },
   csrf: '/sanctum/csrf-cookie',
 }

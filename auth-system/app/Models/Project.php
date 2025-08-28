@@ -43,14 +43,22 @@ class Project extends Model
     //     return $this->belongsToMany(Technology::class, 'project_technology');
     // }
 
+    // public function technologies()
+    // {
+    //     return $this->belongsToMany(
+    //         Technology::class,
+    //         'project_technology'
+    //     )->using(ProjectTechnology::class)
+    //     ->withPivot('project_id', 'technology_id', 'created_at', 'updated_at') // add pivot fields
+    //     ->withTimestamps();
+    // }
     public function technologies()
     {
-        return $this->belongsToMany(
-            Technology::class,
-            'project_technology'
-        )->using(ProjectTechnology::class)
-        ->withTimestamps();
+        return $this->belongsToMany(Technology::class)
+            ->withTimestamps(); // ensures pivot created_at / updated_at available
     }
+
+
 
     protected static function boot()
     {

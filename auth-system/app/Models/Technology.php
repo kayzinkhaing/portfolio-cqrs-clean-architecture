@@ -15,7 +15,7 @@ class Technology extends Model
         'name',
         'slug',
         'icon',
-        'meta',
+        // 'meta',
     ];
 
     protected $casts = [
@@ -23,10 +23,16 @@ class Technology extends Model
     ];
     public function projects()
     {
-        return $this->belongsToMany(Project::class, 'project_technology')
-                    ->using(ProjectTechnology::class)
-                    ->withTimestamps();
+        return $this->belongsToMany(Project::class)
+            ->withTimestamps();
     }
+
+    // public function projects()
+    // {
+    //     return $this->belongsToMany(Project::class, 'project_technology')
+    //                 ->using(ProjectTechnology::class)
+    //                 ->withTimestamps();
+    // }
 
     protected static function booted()
     {

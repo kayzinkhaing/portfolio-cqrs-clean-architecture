@@ -22,6 +22,20 @@ class CrudService
         return $this->repository->all();
     }
 
+    public function create(array $data)
+    {
+        if(method_exists($this->repository, 'createWithRelations')) {
+            $entity = $this->repository->createWithRelations($data);
+        } else {
+            $entity = $this->repository->create($data);
+        }
+        // dd($entity);
+
+        $this->dispatchSyncJob($entity->id, 'create');
+
+        return $entity;
+    }
+
     // public function create(array $data)
     // {
     //     // dd($data);
@@ -33,19 +47,6 @@ class CrudService
     //     $this->dispatchSyncJob($entity->id, 'create');
     //     return $entity;
     // }
-    public function create(array $data)
-    {
-        if (method_exists($this->repository, 'createWithRelations')) {
-            $entity = $this->repository->createWithRelations($data);
-        } else {
-            $entity = $this->repository->create($data);
-        }
-
-        $this->dispatchSyncJob($entity->id, 'create');
-
-        return $entity;
-    }
-
     public function show(int $id)
     {
         return $this->repository->findById($id);
@@ -74,15 +75,25 @@ class CrudService
         return true;
     }
 
+    // protected function dispatchSyncJob(int $id, string $action = 'update')
+    // {
+    //     $modelClass = "App\\Models\\{$this->modelName}";
+
+    //     SyncToReadModelJob::dispatch($modelClass, $id, $action)
+    //         ->onQueue('domain-events');
+    // }
     protected function dispatchSyncJob(int $id, string $action = 'update')
     {
         $modelClass = "App\\Models\\{$this->modelName}";
 
-        Log::info("Dispatching Mongo sync job for {$modelClass} ID {$id} ACTION {$action}");
-
-        SyncToReadModelJob::dispatch($modelClass, $id, $action)
-            ->onQueue('domain-events');
+        SyncToReadModelJob::dispatch(
+            $modelClass,
+            $id,
+            $action,
+            ['technologies', 'status'] // explicitly load
+        )->onQueue('domain-events');
     }
+
 
     /**
      * Dynamically sync pivot relationships if any are provided in data.

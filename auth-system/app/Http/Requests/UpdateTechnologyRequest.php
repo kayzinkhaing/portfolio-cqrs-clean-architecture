@@ -13,7 +13,7 @@ class UpdateTechnologyRequest extends FormRequest
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:technologies,slug,' . $this->route('id'),
             'icon' => 'nullable|string|max:255',
-            'meta' => 'nullable|array',
+            // 'meta' => 'nullable|array',
         ];
     }
 }

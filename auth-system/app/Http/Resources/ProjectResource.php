@@ -12,7 +12,12 @@ class ProjectResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description,
-            'status_id' => $this->status_id,
+            'status_id'   => $this->whenLoaded('status', function () {
+                return [
+                    'id'   => $this->status->id,
+                    'name' => $this->status->name,
+                ];
+            }),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'is_featured' => $this->is_featured,

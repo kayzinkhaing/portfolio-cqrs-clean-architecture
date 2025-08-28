@@ -39,6 +39,34 @@ type Blog {
   user: User            # 👈 embed full user info (not just user_id)
 }
 
+type Technology {
+    id: ID!
+    name: String!
+    slug: String
+    icon: String
+    created_at: String
+    updated_at: String
+}
+
+
+type Status {
+  id: ID!
+  name: String
+}
+
+type Project {
+  id: ID!
+  title: String
+  slug: String
+  description: String
+  status: Status
+  start_date: String
+  end_date: String
+  is_featured: Boolean
+  technologies: [Technology]
+  created_at: String
+  updated_at: String
+}
 # =====================
 # GraphQL Queries
 # =====================
@@ -64,4 +92,10 @@ type Query {
 
   blog(id: ID!): Blog
     @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@find")  # 👈 match PHP
+
+  projects: [Project!]!
+    @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@all")
+
+  project(id: ID!): Project
+    @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@find")
 }

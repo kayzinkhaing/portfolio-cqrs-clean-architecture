@@ -12,7 +12,7 @@ class TechnologyResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'icon' => $this->icon,
-            'meta' => $this->meta,
+            // 'meta' => $this->meta,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

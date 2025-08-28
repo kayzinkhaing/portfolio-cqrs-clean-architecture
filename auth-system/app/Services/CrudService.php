@@ -75,7 +75,9 @@ class CrudService
     }
 
     protected function dispatchSyncJob(int $id, string $action = 'update')
+
     {
+        
         $modelClass = "App\\Models\\{$this->modelName}";
 
         Log::info("Dispatching Mongo sync job for {$modelClass} ID {$id} ACTION {$action}");

@@ -3,48 +3,47 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Experience;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreExperienceRequest;
+use App\Http\Requests\UpdateExperienceRequest;
+use App\Http\Resources\ExperienceResource;
+use App\Repositories\ExperienceRepository;
+use Illuminate\Http\JsonResponse;
 
 class ExperienceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected ExperienceRepository $repository;
+
+    public function __construct(ExperienceRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public function index()
     {
-        //
+        return ExperienceResource::collection($this->repository->all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreExperienceRequest $request)
     {
-        //
+        $experience = $this->repository->create($request->validated());
+        return new ExperienceResource($experience);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Experience $experience)
+    public function show(int $id)
     {
-        //
+        $experience = $this->repository->find($id);
+        return new ExperienceResource($experience);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Experience $experience)
+    public function update(UpdateExperienceRequest $request, int $id)
     {
-        //
+        $experience = $this->repository->update($id, $request->validated());
+        return new ExperienceResource($experience);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Experience $experience)
+    public function destroy(int $id): JsonResponse
     {
-        //
+        $this->repository->delete($id);
+        return response()->json(['success' => true, 'message' => 'Experience deleted']);
     }
 }

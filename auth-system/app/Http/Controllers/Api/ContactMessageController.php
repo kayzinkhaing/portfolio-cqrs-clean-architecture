@@ -2,49 +2,66 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\ContactMessage;
 use Illuminate\Http\Request;
+use App\Application\Buses\QueryBus;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Mail\ContactMessageReceived;
+use Illuminate\Support\Facades\Mail;
+use App\Application\Buses\CommandBus;
+use App\Application\Queries\CrudQuery;
+use App\Application\Commands\CrudCommand;
+use App\Http\Resources\ContactMessageResource;
+use App\Http\Requests\StoreContactMessageRequest;
 
 class ContactMessageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
+
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
-        //
+        $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // List all messages (for admin)
+    public function index(Request $request)
     {
-        //
+        $messages = $this->queryBus->dispatch(
+            new CrudQuery('ContactMessage', 'list', $request->all())
+        );
+
+        return ContactMessageResource::collection($messages);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ContactMessage $contactMessage)
+    // Store message and send email
+    public function store(StoreContactMessageRequest $request)
     {
-        //
-    }
+        // 1️⃣ Store in DB via CQRS command
+        $contactMessage = $this->commandBus->dispatch(
+            new CrudCommand('ContactMessage', 'create', $request->validated())
+        );
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ContactMessage $contactMessage)
-    {
-        //
-    }
+        // 2️⃣ Send email to admin (synchronously)
+        try {
+            Mail::to(config('mail.admin_email'))
+                ->send(new ContactMessageReceived($contactMessage));
+        } catch (\Exception $e) {
+            // Log email failure, but still return success response
+            Log::error('Failed to send contact message email: ' . $e->getMessage());
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ContactMessage $contactMessage)
+        // 3️⃣ Return saved message as JSON resource
+        return new ContactMessageResource($contactMessage);
+    }
+    // Optional: mark message as read
+    public function markAsRead($id)
     {
-        //
+        $message = $this->commandBus->dispatch(
+            new CrudCommand('ContactMessage', 'update', ['id' => (int)$id, 'is_read' => true])
+        );
+
+        return new ContactMessageResource($message);
     }
 }

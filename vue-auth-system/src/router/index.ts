@@ -35,6 +35,7 @@ const SkillsView = () => import('@/pages/Portfolio/SkillsView.vue')
 const EducationView = () => import('@/pages/Portfolio/EducationView.vue')
 const WorkView = () => import('@/pages/Portfolio/WorkView.vue')
 const ExperienceView = () => import('@/pages/Portfolio/ExperienceView.vue')
+const SiteTechnologiesView = () => import('@/pages/Portfolio/SiteTechnologiesView.vue')
 const HireMeView = () => import('@/pages/Portfolio/HireMeView.vue')
 
 // Routes
@@ -88,6 +89,8 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
         meta: { title: 'Projects - Kay Zin Khaing' }},
       { path: 'experience', name: 'Experience', component: ExperienceView ,
         meta: { title: 'Experience - Kay Zin Khaing' }},
+      { path: 'site-technologies', name: 'SiteTechnologies', component: SiteTechnologiesView ,
+        meta: { title: 'Site Technologies - Kay Zin Khaing' }},
       { path: 'hire-me', name: 'HireMe', component: HireMeView ,
         meta: { title: 'Hire Me - Kay Zin Khaing' }},
     ],

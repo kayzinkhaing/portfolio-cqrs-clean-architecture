@@ -65,10 +65,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import ProjectCard from '@/components/portfolio/ProjectCard.vue'
-import ProjectCardSkeleton from '@/components/portfolio/ProjectCardSkeleton.vue'
-import { gqlClient } from '@/api/gql/client'
-import { GET_PROJECTS } from '@/api/queries/projectQuery'
-import type { Project } from '@/types/project'
+import ProjectCardSkeleton from '../../components/portfolio/ProjectCardSkeleton.vue'
+import { gqlClient } from '../../api/gql/client'
+import { GET_PROJECTS } from '../../api/queries/projectQuery'
+import type { Project } from '../../types/project'
 
 const projects = ref<Project[]>([])
 const loading = ref(true)

@@ -1,6 +1,19 @@
 # =====================
 # GraphQL Types
 # =====================
+type Education {
+  id: ID!
+  user_id: ID
+  institution: String
+  degree: String
+  location: String
+  start_date: String
+  end_date: String
+  is_current: Boolean
+  details: String
+  created_at: String
+  updated_at: String
+}
 
 type Township {
   id: ID!
@@ -67,6 +80,19 @@ type Project {
   created_at: String
   updated_at: String
 }
+
+type Experience {
+  id: ID!
+  user_id: String
+  position: String!
+  company: String!
+  location: String
+  start_date: String
+  end_date: String
+  responsibilities: String
+  created_at: String
+  updated_at: String
+}
 # =====================
 # GraphQL Queries
 # =====================
@@ -98,4 +124,13 @@ type Query {
 
   project(id: ID!): Project
     @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@find")
+
+    educations: [Education!]!
+    @field(resolver: "App\\GraphQL\\Queries\\EducationQuery@all")
+
+  education(id: ID!): Education
+    @field(resolver: "App\\GraphQL\\Queries\\EducationQuery@find")
+
+  experiences: [Experience!]!
+    @field(resolver: "App\\GraphQL\\Queries\\ExperienceQuery@all")
 }

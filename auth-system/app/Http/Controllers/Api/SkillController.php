@@ -2,23 +2,36 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSkillRequest;
 use App\Http\Requests\UpdateSkillRequest;
 use App\Http\Resources\SkillResource;
-use App\Models\Skill;
+use App\Application\Buses\CommandBus;
+use App\Application\Buses\QueryBus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SkillController extends Controller
 {
+    protected CommandBus $commandBus;
+    protected QueryBus $queryBus;
+
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
+    {
+        $this->commandBus = $commandBus;
+        $this->queryBus   = $queryBus;
+    }
+
     /**
      * Display a listing of skills.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Load skill with its category
-        $skills = Skill::with('category')->get();
+        $skills = $this->queryBus->dispatch(
+            new CrudQuery('Skill', 'list', $request->all())
+        );
+
         return SkillResource::collection($skills);
     }
 
@@ -27,14 +40,9 @@ class SkillController extends Controller
      */
     public function store(StoreSkillRequest $request)
     {
-        $data = $request->validated();
-
-        // Handle icon file upload
-        if ($request->hasFile('icon')) {
-            $data['icon'] = $request->file('icon')->store('skills', 'public');
-        }
-
-        $skill = Skill::create($data);
+        $skill = $this->commandBus->dispatch(
+            new CrudCommand('Skill', 'create', $request->validated())
+        );
 
         return new SkillResource($skill);
     }
@@ -42,30 +50,25 @@ class SkillController extends Controller
     /**
      * Display the specified skill.
      */
-    public function show(Skill $skill)
+    public function show(int $id)
     {
-        $skill->load('category');
+        $skill = $this->queryBus->dispatch(
+            new CrudQuery('Skill', 'get', ['id' => $id])
+        );
+
         return new SkillResource($skill);
     }
 
     /**
      * Update the specified skill.
      */
-    public function update(UpdateSkillRequest $request, Skill $skill)
+    public function update(UpdateSkillRequest $request, int $id)
     {
-        $data = $request->validated();
+        $payload = array_merge(['id' => $id], $request->validated());
 
-        // Handle icon update
-        if ($request->hasFile('icon')) {
-            // Delete old icon if exists
-            if ($skill->icon) {
-                Storage::disk('public')->delete($skill->icon);
-            }
-            // Store new icon
-            $data['icon'] = $request->file('icon')->store('skills', 'public');
-        }
-
-        $skill->update($data);
+        $skill = $this->commandBus->dispatch(
+            new CrudCommand('Skill', 'update', $payload)
+        );
 
         return new SkillResource($skill);
     }
@@ -73,14 +76,11 @@ class SkillController extends Controller
     /**
      * Remove the specified skill.
      */
-    public function destroy(Skill $skill)
+    public function destroy(int $id)
     {
-        // Delete icon file if exists
-        if ($skill->icon) {
-            Storage::disk('public')->delete($skill->icon);
-        }
-
-        $skill->delete();
+        $this->commandBus->dispatch(
+            new CrudCommand('Skill', 'delete', ['id' => $id])
+        );
 
         return response()->json([
             'success' => true,

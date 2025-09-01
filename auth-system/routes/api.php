@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\WardController;
 use App\Http\Controllers\Api\SkillController;
@@ -43,6 +44,7 @@ Route::apiResource('timeline-items', TimelineItemController::class);
 Route::apiResource('pages', PageController::class);
 Route::apiResource('educations', EducationController::class);
 Route::apiResource('experiences', ExperienceController::class);
+Route::apiResource('contact-messages', ContactMessageController::class);
 
 
 

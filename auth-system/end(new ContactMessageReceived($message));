@@ -1,0 +1,22 @@
+[90m= [39m[34;4mApp\Models\ContactMessage[39;24m {#6764
+    [34mid[39m: [35m1[39m,
+    [34mname[39m: "[32mEverardo Stiedemann[39m",
+    [34memail[39m: "[32mbfisher@example.org[39m",
+    [34msubject[39m: "[32mSunt dolorum vitae ratione animi similique.[39m",
+    [34mmessage[39m: "[32mRerum quisquam qui illo omnis rerum. Provident voluptatum distinctio nemo unde velit quia nulla. Ea magni autem sit quod nulla doloribus rerum. Sint nobis perferendis voluptas non.[39m",
+    [34mis_read[39m: [35m0[39m,
+    [34mcreated_at[39m: "[32m2025-08-26 06:00:49[39m",
+    [34mupdated_at[39m: "[32m2025-08-26 06:00:49[39m",
+  }
+
+[90m= [39m[34;4mApp\Models\ContactMessage[39;24m {#6793
+    [34mid[39m: [35m1[39m,
+    [34mname[39m: "[32mEverardo Stiedemann[39m",
+    [34memail[39m: "[32mbfisher@example.org[39m",
+    [34msubject[39m: "[32mSunt dolorum vitae ratione animi similique.[39m",
+    [34mmessage[39m: "[32mRerum quisquam qui illo omnis rerum. Provident voluptatum distinctio nemo unde velit quia nulla. Ea magni autem sit quod nulla doloribus rerum. Sint nobis perferendis voluptas non.[39m",
+    [34mis_read[39m: [35m0[39m,
+    [34mcreated_at[39m: "[32m2025-08-26 06:00:49[39m",
+    [34mupdated_at[39m: "[32m2025-08-26 06:00:49[39m",
+  }
+

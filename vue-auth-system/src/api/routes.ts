@@ -34,5 +34,18 @@ export const ROUTES = {
     list: '/projects',
     item: (id: number | string) => `/projects/${id}`,
   },
+  educations: {
+    list: '/educations',
+    item: (id: number | string) => `/educations/${id}`,
+  },
+  experiences: {
+    list: '/experiences',
+    item: (id: number | string) => `/experiences/${id}`,
+  },
+  contactMessages: {
+    list: '/contact-messages',
+    item: (id: number | string) => `/contact-messages/${id}`,
+  },
+
   csrf: '/sanctum/csrf-cookie',
 }

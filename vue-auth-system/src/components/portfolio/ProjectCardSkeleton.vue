@@ -1,5 +1,7 @@
 <template>
-  <div class="animate-pulse bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden">
+  <div
+    class="animate-pulse bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden"
+  >
     <!-- Image placeholder -->
     <div class="h-48 bg-slate-700/30"></div>
 

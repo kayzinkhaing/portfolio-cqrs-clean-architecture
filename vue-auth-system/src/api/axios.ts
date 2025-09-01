@@ -5,9 +5,16 @@ import { ROUTES } from './routes'
 // -------------------------
 // Command API (Write) - Laravel
 // -------------------------
-export const commandApi: AxiosInstance = axios.create({
+// ✅ Public API (no CSRF, no credentials)
+export const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-  withCredentials: true,
+  withCredentials: false, // ❌ no cookies, no CSRF
+})
+
+// ✅ Authenticated API (requires CSRF and cookies)
+export const commandApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  withCredentials: true, // ✅ include cookies for auth
 })
 
 // -------------------------

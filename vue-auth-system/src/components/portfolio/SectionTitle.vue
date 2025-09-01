@@ -5,7 +5,7 @@
         {{ title }}
       </span>
     </h2>
-    <p class="text-xl text-slate-300 max-w-2xl mx-auto" v-if="subtitle">
+    <p class="text-xl text-white max-w-2xl mx-auto" v-if="subtitle">
       {{ subtitle }}
     </p>
   </div>

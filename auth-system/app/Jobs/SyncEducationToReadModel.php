@@ -34,6 +34,7 @@ class SyncEducationToReadModel implements ShouldQueue
 
         $document = [
             '_id' => $education->id,
+            'id' => $education->id,
             'user_id' => $education->user_id,
             'institution' => $education->institution,
             'degree' => $education->degree,

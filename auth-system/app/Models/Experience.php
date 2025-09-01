@@ -11,7 +11,7 @@ class Experience extends Model
     use HasFactory, HasImages;
 
     protected $fillable = [
-        'user_id',
+        // 'user_id',
         'position',
         'company',
         // 'company_url',

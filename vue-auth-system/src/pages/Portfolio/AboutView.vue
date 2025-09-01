@@ -97,3 +97,6 @@
     </div>
   </div>
 </template>
+<script setup lang="ts">
+import SectionTitle from '@/components/portfolio/SectionTitle.vue'
+</script>

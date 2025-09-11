@@ -64,7 +64,7 @@ vue-testing-project/
 ### 1. Clone the repositories
 
 ```bash
-git clone https://github.com/your-username/portfolio-cqrs-clean-architecture.git
+git clone https://github.com/kayzinkhaing/portfolio-cqrs-clean-architecture.git
 cd portfolio-cqrs-clean-architecture
 ```
 

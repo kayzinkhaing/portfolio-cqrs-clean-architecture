@@ -16,23 +16,27 @@ async function executeCommand<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 // -------------------------
-// Register a new user
+// Register
 // -------------------------
 export const registerUser = (data: RegisterData): Promise<AuthResponse | null> =>
   executeCommand(() =>
-    withCsrf(() => commandApi.post<AuthResponse>(ROUTES.auth.register, data)).then(res => res.data)
+    withCsrf(() =>
+      commandApi.post<AuthResponse>(ROUTES.auth.register, data)
+    ).then(res => res.data)
   )
 
 // -------------------------
-// Login user
+// Login
 // -------------------------
 export const loginUser = (data: LoginData): Promise<AuthResponse | null> =>
   executeCommand(() =>
-    withCsrf(() => commandApi.post<AuthResponse>(ROUTES.auth.login, data)).then(res => res.data)
+    withCsrf(() =>
+      commandApi.post<AuthResponse>(ROUTES.auth.login, data)
+    ).then(res => res.data)
   )
 
 // -------------------------
-// Logout user
+// Logout
 // -------------------------
 export const logoutUser = (): Promise<boolean> =>
   executeCommand(() =>
@@ -40,27 +44,19 @@ export const logoutUser = (): Promise<boolean> =>
   ).then(res => !!res)
 
 // -------------------------
-// Update user profile
+// Refresh Access Token
+// -------------------------
+export const refreshToken = (): Promise<AuthResponse | null> =>
+  executeCommand(() =>
+    commandApi.post<AuthResponse>(ROUTES.auth.refresh).then(res => res.data)
+  )
+
+// -------------------------
+// Update Profile
 // -------------------------
 export const updateProfile = (data: Partial<RegisterData>): Promise<AuthResponse | null> =>
   executeCommand(() =>
-    withCsrf(() => commandApi.put<AuthResponse>(ROUTES.auth.updateProfile, data)).then(res => res.data)
-  )
-
-// -------------------------
-// Two-Factor Authentication
-// -------------------------
-export const enable2FA = (): Promise<AuthResponse | null> =>
-  executeCommand(() =>
-    withCsrf(() => commandApi.post<AuthResponse>(ROUTES.auth.enable2FA)).then(res => res.data)
-  )
-
-export const disable2FA = (): Promise<AuthResponse | null> =>
-  executeCommand(() =>
-    withCsrf(() => commandApi.post<AuthResponse>(ROUTES.auth.disable2FA)).then(res => res.data)
-  )
-
-export const verify2FA = (code: string): Promise<AuthResponse | null> =>
-  executeCommand(() =>
-    withCsrf(() => commandApi.post<AuthResponse>(ROUTES.auth.verify2FA, { code })).then(res => res.data)
+    withCsrf(() =>
+      commandApi.put<AuthResponse>(ROUTES.auth.updateProfile, data)
+    ).then(res => res.data)
   )

@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
-
+RUN npm install laravel-echo pusher-js
 # Copy all files
 COPY . .
 

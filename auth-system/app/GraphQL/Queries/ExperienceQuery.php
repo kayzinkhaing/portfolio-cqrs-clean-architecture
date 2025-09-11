@@ -2,41 +2,33 @@
 
 namespace App\GraphQL\Queries;
 
-use MongoDB\Client as MongoClient;
+use App\Services\ExperienceCacheService;
 
 class ExperienceQuery
 {
+    protected ExperienceCacheService $cacheService;
+
+    public function __construct(ExperienceCacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
+
     /**
-     * Fetch all experience records
+     * Get all experience records
      */
     public function all(): array
     {
-        // Connect to MongoDB
-        $mongo = new MongoClient(env('MONGO_URL', 'mongodb://mongo:27017'));
-        $collection = $mongo->selectDatabase('read_model')->selectCollection('experiences');
+        return $this->cacheService->fetchAll();
+    }
 
-        // Get all documents
-        $cursor = $collection->find();
-        $docs = iterator_to_array($cursor, false);
+    /**
+     * Get a single experience record by ID
+     */
+    public function find($root, array $args): ?array
+    {
+        $id = $args['id'] ?? null;
+        if (!$id) return null;
 
-        // Map documents to clean associative arrays
-        return array_map(function ($d) {
-            // Convert BSONDocument/BSONArray → associative array
-            $doc = json_decode(json_encode($d), true);
-
-            return [
-                'id'               => isset($doc['id']) ? (string)$doc['id'] : (string)($doc['_id'] ?? ''),
-                // 'user_id'          => $doc['user_id'] ?? null,
-                'position'         => $doc['position'] ?? null,
-                'company'          => $doc['company'] ?? null,
-                'location'         => $doc['location'] ?? null,
-                'start_date'       => $doc['start_date'] ?? null,   // string
-                'end_date'         => $doc['end_date'] ?? null,     // string
-                // 'is_current'    => $doc['is_current'] ?? null,  // uncomment if needed
-                'responsibilities' => $doc['responsibilities'] ?? null,
-                'created_at'       => $doc['created_at'] ?? null,   // string
-                'updated_at'       => $doc['updated_at'] ?? null,   // string
-            ];
-        }, $docs);
+        return $this->cacheService->find($id);
     }
 }

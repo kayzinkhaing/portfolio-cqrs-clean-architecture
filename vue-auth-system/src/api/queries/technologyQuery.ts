@@ -1,17 +1,34 @@
-import axios from 'axios'
-import { ROUTES } from '../routes'
+// C:\xampp\htdocs\vue-testing-project\vue-auth-system\src\api\queries\technologyQuery.ts
 
-export interface Technology {
-  id: number
-  name: string
-  created_at: string
-  updated_at: string
-}
+import { gql } from '@apollo/client/core'
+import { gqlClient } from '../gql/client'
 
-export async function getTechnologies(): Promise<Technology[]> {
+// -------------------------
+// GraphQL Query
+// -------------------------
+export const GET_TECHNOLOGIES = gql`
+  query GetTechnologies {
+    technologies {
+      id
+      name
+      slug
+      icon
+    }
+  }
+`
+
+// -------------------------
+// Query Function
+// -------------------------
+export async function getTechnologies(): Promise<any[]> {
   try {
-    const { data } = await axios.get(ROUTES.technologies.list)
-    return Array.isArray(data.data) ? data.data : []
+    const { data } = await gqlClient.query({
+      query: GET_TECHNOLOGIES,
+      fetchPolicy: 'no-cache', // disables caching
+    })
+
+    // Ensure we return an array
+    return Array.isArray(data.technologies) ? data.technologies : []
   } catch (err) {
     console.error('Error fetching technologies:', err)
     return []

@@ -1,8 +1,14 @@
 <template>
-  <div class="flex justify-center py-6">
-    <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-    </svg>
+  <div class="flex items-center justify-center py-8">
+    <div class="relative">
+      <!-- Outer ring -->
+      <div class="w-12 h-12 rounded-full border-4 border-slate-200"></div>
+      <!-- Inner spinning ring -->
+      <div class="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-transparent border-t-blue-600 animate-spin"></div>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+// No props needed for this simple spinner
+</script>

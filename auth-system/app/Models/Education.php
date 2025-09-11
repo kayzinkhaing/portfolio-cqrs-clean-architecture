@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasImages;
+use App\Observers\CacheObserver;
+use App\Observers\EducationObserver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Education extends Model
 {
@@ -27,9 +29,18 @@ class Education extends Model
         'end_date' => 'date',
         'is_current' => 'boolean',
     ];
+    protected static function booted()
+    {
+        static::observe(CacheObserver::class);
+    }
 
+    // protected static function booted()
+    // {
+    //     Education::observe(EducationObserver::class);
+    // }
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 }
+

@@ -1,32 +1,24 @@
 <?php
+
 namespace App\Application\Buses;
+
+use App\Application\Handlers\CrudCommandHandler;
+use App\Traits\RetryableAction;
 
 class CommandBus
 {
-    public function dispatch($command)
+    use RetryableAction;
+
+    protected CrudCommandHandler $handler;
+
+    public function __construct(CrudCommandHandler $handler)
     {
-        // dd($command);
-        $commandClass = get_class($command); // e.g., App\Application\Commands\CrudCommand
-        $short = class_basename($commandClass); // CrudCommand
-        $handlerClass = $this->resolveHandlerClass(shortName: $short);
-
-        if (!class_exists($handlerClass)) {
-            throw new \RuntimeException("Command handler {$handlerClass} not found.");
-        }
-
-        $handler = app($handlerClass);
-        // dd($handler);
-        return $handler->handle($command);
+        $this->handler = $handler;
     }
 
-    protected function resolveHandlerClass(string $shortName): string
+    public function dispatch($command)
     {
-        // If it's a CrudCommand or CrudQuery, map to CrudCommandHandler or CrudQueryHandler
-        if (str_contains($shortName, needle: 'Crud')) {
-            return "App\\Application\\Handlers\\{$shortName}Handler"; // CrudCommandHandler
-        }
-
-        // Default mapping: Replace 'Command' with 'Handler'
-        return "App\\Application\\Handlers\\" . str_replace('Command', 'Handler', $shortName);
+        // All command handling now automatically has retry + logging
+        return $this->retry(fn() => $this->handler->handle($command));
     }
 }

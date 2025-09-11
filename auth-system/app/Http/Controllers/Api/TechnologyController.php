@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Application\Commands\CrudCommand;
-use App\Application\Queries\CrudQuery;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreTechnologyRequest;
-use App\Http\Requests\UpdateTechnologyRequest;
-use App\Http\Resources\TechnologyResource;
 use App\Application\Buses\CommandBus;
 use App\Application\Buses\QueryBus;
-use Illuminate\Http\Request;
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
+use App\Http\Resources\TechnologyResource;
+use App\Http\Requests\StoreTechnologyRequest;
+use App\Http\Requests\UpdateTechnologyRequest;
 
 class TechnologyController extends Controller
 {
@@ -19,39 +20,55 @@ class TechnologyController extends Controller
     public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
         $this->commandBus = $commandBus;
-        $this->queryBus = $queryBus;
+        $this->queryBus   = $queryBus;
     }
 
+    /**
+     * List all technologies.
+     */
     public function index(Request $request)
     {
-        $result = $this->queryBus->dispatch(
+        $technologies = $this->queryBus->dispatch(
             new CrudQuery('Technology', 'list', $request->all())
         );
 
-        return TechnologyResource::collection($result);
+        return TechnologyResource::collection($technologies)->additional([
+            'meta' => [
+                'count' => count($technologies),
+            ],
+        ]);
     }
 
+    /**
+     * Store a new technology.
+     */
     public function store(StoreTechnologyRequest $request)
     {
         $technology = $this->commandBus->dispatch(
             new CrudCommand('Technology', 'create', $request->validated())
         );
 
-        return new TechnologyResource($technology);
+        return (new TechnologyResource($technology))->response()->setStatusCode(201);
     }
 
-    public function show($id)
+    /**
+     * Get a single technology.
+     */
+    public function show(int $id)
     {
         $technology = $this->queryBus->dispatch(
-            new CrudQuery('Technology', 'get', ['id' => (int)$id])
+            new CrudQuery('Technology', 'get', ['id' => $id])
         );
 
         return new TechnologyResource($technology);
     }
 
-    public function update(UpdateTechnologyRequest $request, $id)
+    /**
+     * Update a technology.
+     */
+    public function update(UpdateTechnologyRequest $request, int $id)
     {
-        $payload = array_merge(['id' => (int)$id], $request->validated());
+        $payload = array_merge(['id' => $id], $request->validated());
 
         $technology = $this->commandBus->dispatch(
             new CrudCommand('Technology', 'update', $payload)
@@ -60,12 +77,15 @@ class TechnologyController extends Controller
         return new TechnologyResource($technology);
     }
 
-    public function destroy($id)
+    /**
+     * Delete a technology.
+     */
+    public function destroy(int $id)
     {
         $this->commandBus->dispatch(
-            new CrudCommand('Technology', 'delete', ['id' => (int)$id])
+            new CrudCommand('Technology', 'delete', ['id' => $id])
         );
 
-        return response()->json(['success' => true, 'message' => 'Technology deleted']);
+        return response()->json(null, 204);
     }
 }

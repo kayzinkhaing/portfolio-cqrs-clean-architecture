@@ -3,22 +3,23 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { ROUTES } from './routes'
 
 // -------------------------
-// Command API (Write) - Laravel
+// Public API (no cookies)
 // -------------------------
-// ✅ Public API (no CSRF, no credentials)
 export const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-  withCredentials: false, // ❌ no cookies, no CSRF
-})
-
-// ✅ Authenticated API (requires CSRF and cookies)
-export const commandApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-  withCredentials: true, // ✅ include cookies for auth
+  withCredentials: false,
 })
 
 // -------------------------
-// Query API (Read) - REST fallback (optional)
+// Authenticated API (cookies + bearer token)
+// -------------------------
+export const commandApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  withCredentials: true, // ✅ cookies included
+})
+
+// -------------------------
+// Query API (optional GraphQL)
 // -------------------------
 export const queryApi: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8000/graphql',
@@ -26,7 +27,7 @@ export const queryApi: AxiosInstance = axios.create({
 })
 
 // -------------------------
-// CSRF for commands
+// CSRF helper
 // -------------------------
 export const getCsrfCookie = (): Promise<AxiosResponse> => {
   const base = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
@@ -38,7 +39,6 @@ export const getCsrfCookie = (): Promise<AxiosResponse> => {
 // -------------------------
 export const setAuthToken = (token: string | null) => {
   const authHeader = token ? `Bearer ${token}` : undefined
-
   commandApi.defaults.headers.common['Authorization'] = authHeader
   queryApi.defaults.headers.common['Authorization'] = authHeader
 }

@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import LoadingSpinner from '@/components/forms/LoadingSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import DynamicForm from '@/components/forms/DynamicForm.vue'
 import { useForgotPassword } from '@/composables/useForgotPassword'
 import { forgotPasswordFields } from '@/config/forms/forgotPasswordFields'

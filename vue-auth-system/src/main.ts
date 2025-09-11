@@ -10,13 +10,28 @@ import './assets/main.css'
 import Toast from "vue-toastification"
 import "vue-toastification/dist/index.css"
 
-const app = createApp(App)
+// ✅ Import Apollo Client
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core'
+import { DefaultApolloClient } from '@vue/apollo-composable'
 
+// ✅ Import Echo plugin
+import '@/plugins/echo'  // <-- ADD THIS LINE
+
+// Apollo client instance
+export const apolloClient = new ApolloClient({
+  link: new HttpLink({
+    uri: import.meta.env.VITE_GRAPHQL_URL,
+  }),
+  cache: new InMemoryCache(),
+})
+
+const app = createApp(App)
+app.provide(DefaultApolloClient, apolloClient)
 app.use(createPinia())
 app.use(router)
 app.use(VueQueryPlugin)
 
-// ✅ Define options directly
+// ✅ Toast options
 const options = {
   position: "top-right",
   timeout: 3000,
@@ -25,7 +40,6 @@ const options = {
   draggable: true,
 }
 
-// ✅ Register plugin
 app.use(Toast, options)
 
 // Initialize tab watcher globally

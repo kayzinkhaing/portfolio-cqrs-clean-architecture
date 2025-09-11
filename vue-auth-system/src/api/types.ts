@@ -47,7 +47,7 @@ export interface AuthResponse {
   message: string
   data: {
     user: User
-    token: string
+    access_token: string
     token_type: string
   }
 }

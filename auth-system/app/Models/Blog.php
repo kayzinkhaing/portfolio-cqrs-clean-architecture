@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\CacheObserver;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Blog extends Model
 {
@@ -19,5 +20,9 @@ class Blog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    protected static function booted()
+    {
+        static::observe(CacheObserver::class);
     }
 }

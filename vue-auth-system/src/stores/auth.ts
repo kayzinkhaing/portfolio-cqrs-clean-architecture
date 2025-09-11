@@ -1,11 +1,13 @@
+// src/stores/auth.ts
 import { defineStore } from 'pinia'
 import type { User, LoginData, RegisterData } from '../api/types'
 import * as authCommand from '../api/commands/authCommand'
 import * as authQuery from '../api/queries/authQuery'
+import { setAuthToken } from '../api/axios'
 
 interface AuthState {
   user: User | null
-  token: string | null
+  accessToken: string | null
   isAuthenticated: boolean
   profileLoading: boolean
   loginLoading: boolean
@@ -18,8 +20,8 @@ interface AuthState {
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
-    token: localStorage.getItem('token') || null,
-    isAuthenticated: !!localStorage.getItem('token'),
+    accessToken: null,
+    isAuthenticated: false,
     profileLoading: false,
     loginLoading: false,
     registerLoading: false,
@@ -30,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     // -------------------------
-    // Utility methods
+    // Utility
     // -------------------------
     setError(message: string) {
       this.error = message
@@ -38,19 +40,21 @@ export const useAuthStore = defineStore('auth', {
     clearError() {
       this.error = null
     },
-    setAuthData({ user, token }: { user: User; token: string }) {
+
+    setAuthData({ user, access_token }: { user: User; access_token: string }) {
       this.user = user
-      this.token = token
+      this.accessToken = access_token
       this.isAuthenticated = true
       this.requires2FA = user.two_factor_enabled || false
-      localStorage.setItem('token', token)
+      setAuthToken(access_token) // ✅ set global axios header
     },
+
     clearAuthData() {
       this.user = null
-      this.token = null
+      this.accessToken = null
       this.isAuthenticated = false
       this.requires2FA = false
-      localStorage.removeItem('token')
+      setAuthToken(null) // ✅ remove global header
     },
 
     // -------------------------
@@ -62,7 +66,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authCommand.registerUser(data)
         if (response?.data) {
-          this.setAuthData(response.data)
+          this.setAuthData({
+            user: response.data.user,
+            access_token: response.data.access_token,
+          })
         } else {
           this.setError(response?.message || 'Registration failed')
         }
@@ -83,7 +90,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authCommand.loginUser(data)
         if (response?.data) {
-          this.setAuthData(response.data)
+          this.setAuthData({
+            user: response.data.user,
+            access_token: response.data.access_token,
+          })
         } else {
           this.setError(response?.message || 'Login failed')
         }
@@ -113,33 +123,43 @@ export const useAuthStore = defineStore('auth', {
     // Fetch Profile
     // -------------------------
     async fetchProfile() {
-  this.profileLoading = true
-  this.clearError()
-  try {
-    const user = await authQuery.getProfileUser()
-    console.log('Fetched user:', user) // <-- debug here
-    if (user) {
-      this.user = user
-      this.isAuthenticated = true
-      this.requires2FA = user.two_factor_enabled || false
-    } else {
-      this.setError('Failed to fetch profile')
-    }
-  } catch (err) {
-    console.error('Error in fetchProfile:', err) // <-- debug here
-    this.setError('Failed to fetch profile')
-  } finally {
-    this.profileLoading = false
-  }
-}
-,
+      this.profileLoading = true
+      this.clearError()
+      try {
+        const user = await authQuery.getProfileUser()
+        if (user) {
+          this.user = user
+          this.isAuthenticated = true
+          this.requires2FA = user.two_factor_enabled || false
+        } else {
+          this.setError('Failed to fetch profile')
+        }
+      } catch (err) {
+        console.error('Error in fetchProfile:', err)
+        this.setError('Failed to fetch profile')
+      } finally {
+        this.profileLoading = false
+      }
+    },
 
     // -------------------------
-    // Initialize Auth
+    // Initialize (Refresh flow)
     // -------------------------
     async initialize() {
-      if (this.token && !this.initialized) {
-        await this.fetchProfile()
+      if (this.initialized) return
+
+      try {
+        const response = await authCommand.refreshToken()
+        if (response?.data?.access_token) {
+          this.setAuthData({
+            user: response.data.user,
+            access_token: response.data.access_token,
+          })
+        }
+      } catch (err) {
+        console.error('Auth init failed:', err)
+        this.clearAuthData()
+      } finally {
         this.initialized = true
       }
     },

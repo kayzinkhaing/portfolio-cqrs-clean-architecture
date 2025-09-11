@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasImages;
 use Illuminate\Support\Str;
+use App\Observers\CacheObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,29 @@ class Project extends Model
         'end_date' => 'date',
     ];
 
+    public function technologies()
+    {
+        return $this->belongsToMany(Technology::class)
+            ->withTimestamps(); // ensures pivot created_at / updated_at available
+    }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($project) {
+            if (empty($project->slug)) {
+                $project->slug = Str::slug($project->title);
+            }
+        });
+    }
+    protected static function booted()
+    {
+        static::observe(CacheObserver::class);
+    }
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
     // relationships
     // public function technologies()
     // {
@@ -52,28 +76,9 @@ class Project extends Model
     //     ->withPivot('project_id', 'technology_id', 'created_at', 'updated_at') // add pivot fields
     //     ->withTimestamps();
     // }
-    public function technologies()
-    {
-        return $this->belongsToMany(Technology::class)
-            ->withTimestamps(); // ensures pivot created_at / updated_at available
-    }
 
 
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($project) {
-            if (empty($project->slug)) {
-                $project->slug = Str::slug($project->title);
-            }
-        });
-    }
-    public function status()
-    {
-        return $this->belongsTo(Status::class);
-    }
 
     // public function user()
     // {

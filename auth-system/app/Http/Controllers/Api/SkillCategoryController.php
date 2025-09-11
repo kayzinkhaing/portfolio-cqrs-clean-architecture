@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Application\Commands\CrudCommand;
-use App\Application\Queries\CrudQuery;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreSkillCategoryRequest;
-use App\Http\Requests\UpdateSkillCategoryRequest;
-use App\Http\Resources\SkillCategoryResource;
 use App\Application\Buses\CommandBus;
 use App\Application\Buses\QueryBus;
-use Illuminate\Http\Request;
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
+use App\Http\Resources\SkillCategoryResource;
+use App\Http\Requests\StoreSkillCategoryRequest;
+use App\Http\Requests\UpdateSkillCategoryRequest;
 
 class SkillCategoryController extends Controller
 {
@@ -19,55 +20,72 @@ class SkillCategoryController extends Controller
     public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
         $this->commandBus = $commandBus;
-        $this->queryBus = $queryBus;
+        $this->queryBus   = $queryBus;
     }
 
+    /**
+     * List all skill categories.
+     */
     public function index(Request $request)
     {
-        $result = $this->queryBus->dispatch(
+        $categories = $this->queryBus->dispatch(
             new CrudQuery('SkillCategory', 'list', $request->all())
         );
 
-        return SkillCategoryResource::collection($result);
+        return SkillCategoryResource::collection($categories)->additional([
+            'meta' => [
+                'count' => count($categories),
+            ],
+        ]);
     }
 
+    /**
+     * Store a new skill category.
+     */
     public function store(StoreSkillCategoryRequest $request)
     {
-        // dd("here");
-        // dd($request->all());
-        $skillCategory = $this->commandBus->dispatch(
+        $category = $this->commandBus->dispatch(
             new CrudCommand('SkillCategory', 'create', $request->validated())
         );
 
-        return new SkillCategoryResource($skillCategory);
+        return (new SkillCategoryResource($category))->response()->setStatusCode(201);
     }
 
-    public function show($id)
+    /**
+     * Get a single skill category.
+     */
+    public function show(int $id)
     {
-        $skillCategory = $this->queryBus->dispatch(
-            new CrudQuery('SkillCategory', 'get', ['id' => (int)$id])
+        $category = $this->queryBus->dispatch(
+            new CrudQuery('SkillCategory', 'get', ['id' => $id])
         );
 
-        return new SkillCategoryResource($skillCategory);
+        return new SkillCategoryResource($category);
     }
 
-    public function update(UpdateSkillCategoryRequest $request, $id)
+    /**
+     * Update a skill category.
+     */
+    public function update(UpdateSkillCategoryRequest $request, int $id)
     {
-        $payload = array_merge(['id' => (int)$id], $request->validated());
+        $payload = array_merge(['id' => $id], $request->validated());
 
-        $skillCategory = $this->commandBus->dispatch(
+        $category = $this->commandBus->dispatch(
             new CrudCommand('SkillCategory', 'update', $payload)
         );
 
-        return new SkillCategoryResource($skillCategory);
+        return new SkillCategoryResource($category);
     }
 
-    public function destroy($id)
+    /**
+     * Delete a skill category.
+     */
+    public function destroy(int $id)
     {
         $this->commandBus->dispatch(
-            new CrudCommand('SkillCategory', 'delete', ['id' => (int)$id])
+            new CrudCommand('SkillCategory', 'delete', ['id' => $id])
         );
 
-        return response()->json(['success' => true, 'message' => 'Skill Category deleted']);
+        return response()->json(null, 204);
     }
 }

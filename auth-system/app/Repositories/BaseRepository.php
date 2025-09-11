@@ -24,6 +24,7 @@ class BaseRepository implements BaseInterface
 
     public function create(array $data)
     {
+        // dd($data);
         $images = $data['image'] ?? null;
         $video = $data['video'] ?? null;
 
@@ -104,6 +105,7 @@ class BaseRepository implements BaseInterface
 
     public function syncOrDetachRelationship(Model $model, string $relation, array $ids, bool $sync = true): bool
     {
+        // dd($model);
         // Check if the relationship method exists
         if (!method_exists($model, $relation)) {
             throw new \InvalidArgumentException("The relationship method {$relation} does not exist on the model.");
@@ -111,6 +113,7 @@ class BaseRepository implements BaseInterface
 
         // Get the relationship method on the model
         $relationship = $model->$relation();
+        // dd($relationship);
         // Perform sync or detach based on the flag
         if (!$sync) {
             // Detach the relationship and return true if successful
@@ -119,6 +122,7 @@ class BaseRepository implements BaseInterface
         }
         // Sync the relationship and check if anything was attached/detached
         $result = $relationship->sync($ids);
+        // dd($result);
 
         // If there are any changes (attached, detached, or updated), return true
         return isset($result['attached']) || isset($result['detached']) || isset($result['updated']);

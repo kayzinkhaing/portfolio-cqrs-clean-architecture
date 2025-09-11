@@ -112,10 +112,8 @@ export function useRegister() {
       ward_id: Number(form.value.ward_id),         // convert ward_id to number if backend expects integer
     }
 
-    console.log("Payload for backend:", payload)
-
     const res = await registerUser(payload)
-    if (res?.data) router.push('/login')
+    if (res?.data) router.push('/home/login')
     else errorStore.setGeneralError(res?.message || 'Registration failed')
   } catch (err) {
     handleApiError(err)

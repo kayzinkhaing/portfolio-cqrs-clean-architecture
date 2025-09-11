@@ -1,7 +1,7 @@
 // src/composables/useLogin.ts
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useErrorStore } from '../stores/errorStore'
+import { useErrorStore } from '../stores/errorStore.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiLoader } from './useApiLoader'
 import { sanitizeObject } from '../utils/sanitize'
@@ -54,7 +54,7 @@ export function useLogin() {
         if (auth.requires2FA) {
           router.push({ name: 'TwoFactor' })
         } else {
-          router.push({ name: 'Home' })
+          router.push({ name: 'DashboardHome' })
         }
       }, isLoading)
     } catch (error: any) {

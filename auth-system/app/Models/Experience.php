@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasImages;
+use App\Observers\CacheObserver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Experience extends Model
 {
@@ -30,6 +31,10 @@ class Experience extends Model
         'responsibilities' => 'array',
         'is_current' => 'boolean',
     ];
+    protected static function booted()
+    {
+        static::observe(CacheObserver::class);
+    }
 
     public function user()
     {

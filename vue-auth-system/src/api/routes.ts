@@ -4,6 +4,7 @@ export const ROUTES = {
   auth: {
     register: '/register',
     login: '/login',
+    refresh:'refresh-token',
     logout: '/logout',
     profile: '/profile',
     updateProfile: '/update-profile',
@@ -45,6 +46,9 @@ export const ROUTES = {
   contactMessages: {
     list: '/contact-messages',
     item: (id: number | string) => `/contact-messages/${id}`,
+  },
+  notiMessage:{
+    unread: '/notifications/unread',
   },
 
   csrf: '/sanctum/csrf-cookie',

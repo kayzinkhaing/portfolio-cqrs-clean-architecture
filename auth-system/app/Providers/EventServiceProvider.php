@@ -18,9 +18,16 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         // When a user is created in MySQL, update the MongoDB read model
-        UserCreatedEvent::class => [
-            UpdateUserReadModel::class,
+        // UserCreatedEvent::class => [
+        //     // UpdateUserReadModel::class,
+        // ],
+
+        \App\Events\ModelChanged::class => [
+            \App\Listeners\SyncReadModelListener::class,
         ],
+        \App\Events\ContactMessageSyncedToMongo::class => [
+            \App\Listeners\RefreshContactMessageCache::class,
+        ]
 
         // You can add more events here for CQRS
         // Example:

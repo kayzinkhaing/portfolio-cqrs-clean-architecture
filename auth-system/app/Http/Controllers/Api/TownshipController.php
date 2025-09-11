@@ -41,6 +41,7 @@ class TownshipController extends Controller
     // POST /townships
     public function store(TownshipStoreRequest $request): JsonResponse
     {
+        // dd("here");
         $township = $this->commandBus->dispatch(
             new CreateTownshipCommand($request->validated())
         );

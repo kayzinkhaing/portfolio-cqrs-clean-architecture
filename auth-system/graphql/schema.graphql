@@ -1,6 +1,7 @@
 # =====================
 # GraphQL Types
 # =====================
+
 type Education {
   id: ID!
   user_id: ID
@@ -49,22 +50,32 @@ type Blog {
   published_at: String
   created_at: String
   updated_at: String
-  user: User            # 👈 embed full user info (not just user_id)
+  user: User
 }
 
 type Technology {
-    id: ID!
-    name: String!
-    slug: String
-    icon: String
-    created_at: String
-    updated_at: String
+  id: ID!
+  name: String!
+  slug: String
+  icon: String
+  created_at: String
+  updated_at: String
 }
-
 
 type Status {
   id: ID!
   name: String
+  slug: String
+  created_at: String
+  updated_at: String
+}
+type Technology {
+  id: ID!
+  name: String
+  slug: String
+  icon: String
+  created_at: String
+  updated_at: String
 }
 
 type Project {
@@ -81,6 +92,35 @@ type Project {
   updated_at: String
 }
 
+# ✅ New Pagination Wrapper
+type ProjectPagination {
+  data: [Project!]!
+  current: Int!
+  per_page: Int!
+  total: Int!
+  last_page: Int!
+}
+
+input ProjectCreateInput {
+  title: String!
+  description: String
+  status_id: ID
+  technology_ids: [ID!]
+  start_date: String
+  end_date: String
+  is_featured: Boolean
+}
+
+input ProjectUpdateInput {
+  title: String
+  description: String
+  status_id: ID
+  technology_ids: [ID!]
+  start_date: String
+  end_date: String
+  is_featured: Boolean
+}
+
 type Experience {
   id: ID!
   user_id: String
@@ -89,10 +129,22 @@ type Experience {
   location: String
   start_date: String
   end_date: String
-  responsibilities: String
+  responsibilities: [String!]
   created_at: String
   updated_at: String
 }
+
+type ContactMessage {
+  id: ID!
+  name: String
+  email: String
+  subject: String
+  message: String
+  is_read: Boolean
+  created_at: String
+  updated_at: String
+}
+
 # =====================
 # GraphQL Queries
 # =====================
@@ -114,18 +166,29 @@ type Query {
     @field(resolver: "App\\GraphQL\\Queries\\UserQuery@current")
 
   blogs(limit: Int, search: String): [Blog!]!
-    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@all")   # 👈 match PHP
+    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@all")
 
   blog(id: ID!): Blog
-    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@find")  # 👈 match PHP
+    @field(resolver: "App\\GraphQL\\Queries\\BlogQuery@find")
 
-  projects: [Project!]!
-    @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@all")
+  statuses: [Status!]!
+    @field(resolver: "App\\GraphQL\\Queries\\StatusQuery@all")
+
+  status(id: ID!): Status
+    @field(resolver: "App\\GraphQL\\Queries\\StatusQuery@find")
+
+  technologies: [Technology!]! @field(resolver: "App\\GraphQL\\Queries\\TechnologyQuery@all")
+  technology(id: ID!): Technology @field(resolver: "App\\GraphQL\\Queries\\TechnologyQuery@find")
+
+
+  # ✅ Changed to support pagination
+  projects(page: Int, per_page: Int): ProjectPagination!
+    @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@paginated")
 
   project(id: ID!): Project
     @field(resolver: "App\\GraphQL\\Queries\\ProjectQuery@find")
 
-    educations: [Education!]!
+  educations: [Education!]!
     @field(resolver: "App\\GraphQL\\Queries\\EducationQuery@all")
 
   education(id: ID!): Education
@@ -133,4 +196,13 @@ type Query {
 
   experiences: [Experience!]!
     @field(resolver: "App\\GraphQL\\Queries\\ExperienceQuery@all")
+
+  contactMessages: [ContactMessage!]!
+    @field(resolver: "App\\GraphQL\\Queries\\ContactMessageQuery@all")
+
+  contactMessage(id: ID!): ContactMessage
+    @field(resolver: "App\\GraphQL\\Queries\\ContactMessageQuery@find")
+
+  unreadContactMessages: [ContactMessage!]!
+    @field(resolver: "App\\GraphQL\\Queries\\ContactMessageQuery@unread")
 }

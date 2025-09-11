@@ -1,17 +1,30 @@
-import axios from 'axios'
-import { ROUTES } from '../routes'
+import { gql } from '@apollo/client/core'
+import { gqlClient } from '../gql/client'
 
-export interface Status {
-  id: number
-  name: string
-  created_at: string
-  updated_at: string
-}
+// -------------------------
+// GraphQL Query
+// -------------------------
+export const GET_STATUSES = gql`
+  query GetStatuses {
+    statuses {
+      id
+      name
+    }
+  }
+`
 
-export async function getStatuses(): Promise<Status[]> {
+// -------------------------
+// Query Function
+// -------------------------
+export async function getStatuses(): Promise<any[]> {
   try {
-    const { data } = await axios.get(ROUTES.statuses.list)
-    return Array.isArray(data.data) ? data.data : []
+    const { data } = await gqlClient.query({
+      query: GET_STATUSES,
+      fetchPolicy: 'no-cache', // optional: disables caching
+    })
+
+    // Ensure we return an array
+    return Array.isArray(data.statuses) ? data.statuses : []
   } catch (err) {
     console.error('Error fetching statuses:', err)
     return []

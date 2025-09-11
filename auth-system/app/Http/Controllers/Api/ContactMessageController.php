@@ -4,64 +4,91 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Application\Buses\QueryBus;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use App\Mail\ContactMessageReceived;
-use Illuminate\Support\Facades\Mail;
 use App\Application\Buses\CommandBus;
 use App\Application\Queries\CrudQuery;
 use App\Application\Commands\CrudCommand;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ContactMessageResource;
 use App\Http\Requests\StoreContactMessageRequest;
+use App\Http\Requests\UpdateContactMessageRequest;
+use App\Services\NotificationService;
 
 class ContactMessageController extends Controller
 {
     protected CommandBus $commandBus;
     protected QueryBus $queryBus;
+    protected NotificationService $notificationService;
 
-    public function __construct(CommandBus $commandBus, QueryBus $queryBus)
+    public function __construct(CommandBus $commandBus, QueryBus $queryBus, NotificationService $notificationService)
     {
         $this->commandBus = $commandBus;
         $this->queryBus = $queryBus;
+        $this->notificationService = $notificationService;
     }
 
-    // List all messages (for admin)
+    /**
+     * List all messages (with optional pagination & filters)
+     */
     public function index(Request $request)
     {
         $messages = $this->queryBus->dispatch(
             new CrudQuery('ContactMessage', 'list', $request->all())
         );
 
-        return ContactMessageResource::collection($messages);
+        return ContactMessageResource::collection($messages)->additional([
+            'meta' => ['count' => count($messages)]
+        ]);
     }
 
-    // Store message and send email
+    /**
+     * Store a new contact message (write in MySQL, send email)
+     */
     public function store(StoreContactMessageRequest $request)
     {
-        // 1️⃣ Store in DB via CQRS command
         $contactMessage = $this->commandBus->dispatch(
             new CrudCommand('ContactMessage', 'create', $request->validated())
         );
 
-        // 2️⃣ Send email to admin (synchronously)
-        try {
-            Mail::to(config('mail.admin_email'))
-                ->send(new ContactMessageReceived($contactMessage));
-        } catch (\Exception $e) {
-            // Log email failure, but still return success response
-            Log::error('Failed to send contact message email: ' . $e->getMessage());
-        }
+        // Send email with retry strategy
+        $this->notificationService->sendContactMessageEmail($contactMessage);
 
-        // 3️⃣ Return saved message as JSON resource
-        return new ContactMessageResource($contactMessage);
+        return (new ContactMessageResource($contactMessage))
+            ->response()
+            ->setStatusCode(201);
     }
-    // Optional: mark message as read
-    public function markAsRead($id)
+
+    public function update(UpdateContactMessageRequest $request, int $id)
     {
-        $message = $this->commandBus->dispatch(
-            new CrudCommand('ContactMessage', 'update', ['id' => (int)$id, 'is_read' => true])
+        $payload = array_merge(['id' => $id], $request->validated());
+
+        $contactMessage = $this->commandBus->dispatch(
+            new CrudCommand('ContactMessage', 'update', $payload)
         );
 
-        return new ContactMessageResource($message);
+        return new ContactMessageResource($contactMessage);
+    }
+
+    public function destroy(int $id)
+    {
+        $this->commandBus->dispatch(
+            new CrudCommand('ContactMessage', 'delete', ['id' => $id])
+        );
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Get unread messages count and list (read from Mongo)
+     */
+    public function unread()
+    {
+        $messages = $this->queryBus->dispatch(
+            new CrudQuery('ContactMessage', 'list', ['filter' => ['is_read' => false]])
+        );
+
+        return response()->json([
+            'data' => ContactMessageResource::collection($messages),
+            'meta' => ['count' => count($messages)]
+        ]);
     }
 }

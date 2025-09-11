@@ -23,15 +23,21 @@ class ExperienceController extends Controller
         $this->queryBus = $queryBus;
     }
 
+    /**
+     * List all experiences with optional filters.
+     */
     public function index(Request $request)
     {
-        $result = $this->queryBus->dispatch(
+        $experiences = $this->queryBus->dispatch(
             new CrudQuery('Experience', 'list', $request->all())
         );
 
-        return ExperienceResource::collection($result);
+        return ExperienceResource::collection($experiences);
     }
 
+    /**
+     * Store a new experience.
+     */
     public function store(StoreExperienceRequest $request)
     {
         $experience = $this->commandBus->dispatch(
@@ -41,6 +47,9 @@ class ExperienceController extends Controller
         return new ExperienceResource($experience);
     }
 
+    /**
+     * Show a single experience by ID.
+     */
     public function show(int $id)
     {
         $experience = $this->queryBus->dispatch(
@@ -50,6 +59,9 @@ class ExperienceController extends Controller
         return new ExperienceResource($experience);
     }
 
+    /**
+     * Update an existing experience.
+     */
     public function update(UpdateExperienceRequest $request, int $id)
     {
         $payload = array_merge(['id' => $id], $request->validated());
@@ -61,12 +73,18 @@ class ExperienceController extends Controller
         return new ExperienceResource($experience);
     }
 
+    /**
+     * Delete an experience.
+     */
     public function destroy(int $id)
     {
         $this->commandBus->dispatch(
             new CrudCommand('Experience', 'delete', ['id' => $id])
         );
 
-        return response()->json(['success' => true, 'message' => 'Experience deleted']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Experience deleted successfully.'
+        ]);
     }
 }

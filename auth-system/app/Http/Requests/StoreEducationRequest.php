@@ -13,6 +13,7 @@ class StoreEducationRequest extends FormRequest
 
     public function rules(): array
     {
+        // dd("here");
         return [
             'institution' => 'required|string|max:255',
             'degree'      => 'required|string|max:255',

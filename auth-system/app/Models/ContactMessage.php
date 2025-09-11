@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\CacheObserver;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\ContactMessageObserver;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ContactMessage extends Model
 {
@@ -15,11 +18,17 @@ class ContactMessage extends Model
         'subject',
         'message',
         'is_read',
-        // 'read_at',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
-        'read_at' => 'datetime',
     ];
+    protected static function booted()
+    {
+        static::observe(CacheObserver::class);
+    }
+    // protected static function booted()
+    // {
+    //     ContactMessage::observe(ContactMessageObserver::class);
+    // }
 }

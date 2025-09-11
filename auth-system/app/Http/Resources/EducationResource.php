@@ -14,13 +14,11 @@ class EducationResource extends JsonResource
     {
         return [
             'id'          => $this->id,
-            'user_id'     => $this->user_id,
             'institution' => $this->institution,
             'degree'      => $this->degree,
             'location'    => $this->location,
             'start_date'  => $this->start_date?->toDateString(),
             'end_date'    => $this->end_date?->toDateString(),
-            'is_current'  => $this->is_current,
             'details'     => $this->details,
             'created_at'  => $this->created_at,
             'updated_at'  => $this->updated_at,

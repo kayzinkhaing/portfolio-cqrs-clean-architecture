@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Commands\CrudCommand;
-use App\Application\Queries\CrudQuery;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreSkillRequest;
-use App\Http\Requests\UpdateSkillRequest;
-use App\Http\Resources\SkillResource;
 use App\Application\Buses\CommandBus;
 use App\Application\Buses\QueryBus;
-use Illuminate\Http\Request;
+use App\Application\Commands\CrudCommand;
+use App\Application\Queries\CrudQuery;
+use App\Http\Resources\SkillResource;
+use App\Http\Requests\StoreSkillRequest;
+use App\Http\Requests\UpdateSkillRequest;
 
 class SkillController extends Controller
 {
@@ -24,7 +24,7 @@ class SkillController extends Controller
     }
 
     /**
-     * Display a listing of skills.
+     * List all skills.
      */
     public function index(Request $request)
     {
@@ -32,11 +32,15 @@ class SkillController extends Controller
             new CrudQuery('Skill', 'list', $request->all())
         );
 
-        return SkillResource::collection($skills);
+        return SkillResource::collection($skills)->additional([
+            'meta' => [
+                'count' => count($skills),
+            ],
+        ]);
     }
 
     /**
-     * Store a newly created skill.
+     * Store a new skill.
      */
     public function store(StoreSkillRequest $request)
     {
@@ -44,11 +48,11 @@ class SkillController extends Controller
             new CrudCommand('Skill', 'create', $request->validated())
         );
 
-        return new SkillResource($skill);
+        return (new SkillResource($skill))->response()->setStatusCode(201);
     }
 
     /**
-     * Display the specified skill.
+     * Get a single skill.
      */
     public function show(int $id)
     {
@@ -60,7 +64,7 @@ class SkillController extends Controller
     }
 
     /**
-     * Update the specified skill.
+     * Update a skill.
      */
     public function update(UpdateSkillRequest $request, int $id)
     {
@@ -74,7 +78,7 @@ class SkillController extends Controller
     }
 
     /**
-     * Remove the specified skill.
+     * Delete a skill.
      */
     public function destroy(int $id)
     {
@@ -82,9 +86,6 @@ class SkillController extends Controller
             new CrudCommand('Skill', 'delete', ['id' => $id])
         );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Skill deleted successfully'
-        ]);
+        return response()->json(null, 204);
     }
 }

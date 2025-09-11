@@ -1,25 +1,25 @@
 <template>
-    <!-- DynamicForm.vue -->
-<form @submit.prevent="handleSubmit" class="space-y-4">
-  <component
-    v-for="field in fields"
-    :key="field.model"
-    :is="getComponent(field.type)"
-    v-model="form[field.model]"
-    v-bind="field.props"
-    :label="field.label"
-    :placeholder="field.placeholder"
-    :type="field.type"
-    :options="field.options"
-    :error="errors[field.model]" 
-    @change="field.type === 'select' ? onSelectChange(field.model) : null"
-  />
+  <form @submit.prevent="handleSubmit" class="space-y-6">
+    <component
+      v-for="field in fields"
+      :key="field.model"
+      :is="getComponent(field.type)"
+      v-model="form[field.model]"
+      v-bind="field.props"
+      :label="field.label"
+      :placeholder="field.placeholder"
+      :type="field.type"
+      :options="field.options"
+      :error="errors[field.model]"
+      @change="field.type === 'select' ? onSelectChange(field.model) : null"
+    />
 
-  <slot name="extra"></slot> <!-- <-- New slot for extra links/buttons -->
+    <slot name="extra" />
 
-  <SubmitButton :loading="loading">{{ submitLabel }}</SubmitButton>
-</form>
-
+    <SubmitButton :loading="loading" class="w-full">
+      {{ submitLabel }}
+    </SubmitButton>
+  </form>
 </template>
 
 <script setup lang="ts">
@@ -33,15 +33,14 @@ const props = defineProps({
   form: { type: Object, required: true },
   errors: { type: Object, default: () => ({}) },
   loading: { type: Boolean, default: false },
-  submitLabel: { type: String, default: 'Submit' },
+  submitLabel: { type: String, default: 'Submit' }
 })
 
 const emit = defineEmits(['submit', 'update:modelValue'])
 
 function getComponent(type: string) {
-  if (type === 'select') return BaseSelect
-  if (type === 'textarea') return BaseTextarea
-  return BaseInput
+  const components = { select: BaseSelect, textarea: BaseTextarea }
+  return components[type] || BaseInput
 }
 
 function onSelectChange(modelKey: string) {

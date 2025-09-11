@@ -1,7 +1,7 @@
-<?
+<?php
 namespace App\Services;
 
-use App\Jobs\SyncToReadModelJob;
+use App\Events\ModelChanged;
 use Illuminate\Support\Facades\Log;
 
 class CrudService
@@ -13,8 +13,9 @@ class CrudService
     {
         $this->modelName = $modelName;
         $repositoryClass = "App\\Repositories\\{$modelName}Repository";
-        // dd($repositoryClass);
+        // dd($repositoryClass);//"App\Repositories\ProjectRepository" // app/Services/CrudService.php:16
         $this->repository = app($repositoryClass);
+        // dd($this->repository);
     }
 
     public function listAll()
@@ -24,29 +25,18 @@ class CrudService
 
     public function create(array $data)
     {
-        if(method_exists($this->repository, 'createWithRelations')) {
-            $entity = $this->repository->createWithRelations($data);
-        } else {
-            $entity = $this->repository->create($data);
-        }
-        // dd($entity);
+        // dd($data);
+        $entity = method_exists($this->repository, 'createWithRelations')
+            ? $this->repository->createWithRelations($data)
+            : $this->repository->create($data);
 
-        $this->dispatchSyncJob($entity->id, 'create');
+            // dd($entity);
+
+        $this->dispatchModelChangedEvent($entity, 'create');
 
         return $entity;
     }
 
-    // public function create(array $data)
-    // {
-    //     // dd($data);
-    //     $entity = $this->repository->create($data);
-
-    //     // Handle dynamic pivot relationships
-    //     $this->syncPivotRelations($entity, $data);
-
-    //     $this->dispatchSyncJob($entity->id, 'create');
-    //     return $entity;
-    // }
     public function show(int $id)
     {
         return $this->repository->findById($id);
@@ -54,69 +44,47 @@ class CrudService
 
     public function update(int $id, array $data)
     {
-        $entity = $this->repository->update($id, $data);
+        $entity = method_exists($this->repository, 'updateWithRelations')
+            ? $this->repository->updateWithRelations($id, $data)
+            : $this->repository->update($id, $data);
 
-        // Handle dynamic pivot relationships
         $this->syncPivotRelations($entity, $data);
+        $this->dispatchModelChangedEvent($entity->id, 'update');
 
-        $this->dispatchSyncJob($entity->id, 'update');
         return $entity;
     }
 
     public function delete(int $id)
     {
         $entity = $this->repository->findById($id);
-
         if ($entity) {
             $entity->delete();
-            $this->dispatchSyncJob($id, 'delete');
+            $this->dispatchModelChangedEvent($id, 'delete');
         }
-
         return true;
     }
 
-    // protected function dispatchSyncJob(int $id, string $action = 'update')
-    // {
-    //     $modelClass = "App\\Models\\{$this->modelName}";
-
-    //     SyncToReadModelJob::dispatch($modelClass, $id, $action)
-    //         ->onQueue('domain-events');
-    // }
-    protected function dispatchSyncJob(int $id, string $action = 'update')
-
-    {
-        
-        $modelClass = "App\\Models\\{$this->modelName}";
-
-        SyncToReadModelJob::dispatch(
-            $modelClass,
-            $id,
-            $action,
-            ['technologies', 'status'] // explicitly load
-        )->onQueue('domain-events');
-    }
+    /** Dispatch domain event instead of direct job */
+    protected function dispatchModelChangedEvent($model, string $action = 'update')
+{
+    // $model can be any Eloquent model
+    event(new ModelChanged($model, $action));
+}
 
 
-    /**
-     * Dynamically sync pivot relationships if any are provided in data.
-     */
+    /** Dynamically sync pivot relationships if any */
     protected function syncPivotRelations($entity, array $data)
     {
         if (!$entity) return;
 
         foreach ($data as $key => $value) {
             if (str_ends_with($key, '_ids') && is_array($value)) {
-                $relationName = str_replace('_ids', '', $key);
-
-                if (method_exists($entity, $relationName)) {
-                    // Attach pivot IDs
-                    $entity->$relationName()->sync($value);
-                    // Reload relationship so resource can return it
-                    $entity->load($relationName);
+                $relation = str_replace('_ids', '', $key);
+                if (method_exists($entity, $relation)) {
+                    $entity->$relation()->sync($value);
+                    $entity->load($relation);
                 }
             }
         }
     }
-
 }
-?>

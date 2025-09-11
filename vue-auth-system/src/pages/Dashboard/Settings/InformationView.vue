@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { defineAsyncComponent } from 'vue'
-import { useAuthStore } from '../../stores/auth'
+import { useAuthStore } from '../../../stores/auth'
 
 // Async Heroicons
 const UserIcon = defineAsyncComponent(() => import('@heroicons/vue/24/outline/UserIcon.js'))

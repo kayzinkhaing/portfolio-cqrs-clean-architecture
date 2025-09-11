@@ -55,7 +55,7 @@
 
 
 <script setup lang="ts">
-import LoadingSpinner from '../../components/LoadingSpinner.vue'
+import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import TwoFactorForm from '@/components/TwoFactorForm.vue'
 import TwoFactorButtons from '@/components/TwoFactorButtons.vue'
 import TwoFactorQRCode from '@/components/TwoFactorQRCode.vue'

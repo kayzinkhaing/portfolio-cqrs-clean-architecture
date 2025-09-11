@@ -3,10 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogController;
-use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\WardController;
 use App\Http\Controllers\Api\SkillController;
+use App\Http\Controllers\Api\SkillsController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TownshipController;
@@ -15,13 +15,17 @@ use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\ExperienceController;
 use App\Http\Controllers\Api\TechnologyController;
 use App\Http\Controllers\Api\TestimonialController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TimelineItemController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SkillCategoryController;
+use App\Http\Controllers\Api\ContactMessageController;
 
 // === Public Routes ===
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', action: [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+//refresh-tokens
+Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 // Forgot & Reset Password
 Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])
         ->name('password.forgot');
@@ -45,10 +49,6 @@ Route::apiResource('pages', PageController::class);
 Route::apiResource('educations', EducationController::class);
 Route::apiResource('experiences', ExperienceController::class);
 Route::apiResource('contact-messages', ContactMessageController::class);
-
-
-
-
 
 
 

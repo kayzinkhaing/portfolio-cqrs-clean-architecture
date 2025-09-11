@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import useUserBlogs from '../../composables/useUserBlogs'
+import useUserBlogs from '../../../composables/useUserBlogs'
 
 const {
   blogs,

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Application\Buses\QueryBus;
@@ -15,6 +16,8 @@ use App\Application\Commands\RegisterUserCommand;
 use App\Application\Commands\UpdateProfileCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
+
 class AuthController extends Controller
 {
     protected CommandBus $commandBus;
@@ -26,55 +29,113 @@ class AuthController extends Controller
         $this->queryBus = $queryBus;
     }
 
-    public function register(RegisterRequest $request)
+    // -------------------------
+    // Register a new user
+    // -------------------------
+    public function register(RegisterRequest $request): JsonResponse
     {
-        // dd($request);
-        // exit;
-        $result = $this->commandBus->dispatch(
-            new RegisterUserCommand($request->validated())
-        );
-
+        $result = $this->commandBus->dispatch(new RegisterUserCommand($request->validated()));
         $user = $result['user']->load(['township', 'ward']);
+
+        // Create refresh token
+        $refreshToken = $user->createToken('refresh', ['refresh'])->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'User registered successfully',
             'data' => [
                 'user' => new UserResource($user),
-                'token' => $result['token'],
-                'token_type' => 'Bearer'
+                'access_token' => $result['token'],
+                'token_type' => 'Bearer',
             ],
-        ], 201);
+        ])
+        ->cookie(
+            'refresh_token',
+            $refreshToken,
+            60 * 24 * 7, // 7 days
+            '/',
+            null,
+            config('app.env') === 'production', // secure only in production
+            true, // HttpOnly
+            false,
+            'Strict'
+        );
     }
 
-    public function login(LoginRequest $request)
+    // -------------------------
+    // Login
+    // -------------------------
+    public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $result = $this->commandBus->dispatch(new LoginUserCommand($data['email'], $data['password']));
+        $user = $result['user']->load(['township', 'ward']);
 
-        $result = $this->commandBus->dispatch(
-            new LoginUserCommand($data['email'], $data['password'])
-        );
+        // Create refresh token
+        $refreshToken = $user->createToken('refresh', ['refresh'])->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'user'  => new UserResource($result['user']->load(['township', 'ward'])),
-                'token' => $result['token'],
+                'user' => new UserResource($user),
+                'access_token' => $result['token'],
                 'token_type' => 'Bearer',
+            ],
+        ])
+        ->cookie(
+            'refresh_token',
+            $refreshToken,
+            60 * 24 * 7, // 7 days
+            '/',
+            null,
+            config('app.env') === 'production',
+            true, // HttpOnly
+            false,
+            'Strict'
+        );
+    }
+
+    // -------------------------
+    // Refresh access token
+    // -------------------------
+    public function refreshToken(Request $request): JsonResponse
+    {
+        $refreshToken = $request->cookie('refresh_token');
+
+        if (!$refreshToken) {
+            return response()->json(['message' => 'No refresh token'], 401);
+        }
+
+        $token = PersonalAccessToken::findToken($refreshToken);
+
+        if (!$token || !$token->tokenable) {
+            return response()->json(['message' => 'Invalid refresh token'], 401);
+        }
+
+        $user = $token->tokenable;
+
+        // Create new access token
+        $newAccessToken = $user->createToken('access')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Access token refreshed successfully',
+            'data' => [
+                'access_token' => $newAccessToken,
+                'token_type' => 'Bearer',
+                'user' => new UserResource($user),
             ],
         ]);
     }
 
-
-   public function profile(Request $request): JsonResponse
+    // -------------------------
+    // User profile
+    // -------------------------
+    public function profile(Request $request): JsonResponse
     {
-        // Dispatch the query through the query bus
-        $user = $this->queryBus->dispatch(
-            new GetUserProfileQuery($request->user())
-        );
+        $user = $this->queryBus->dispatch(new GetUserProfileQuery($request->user()));
 
-        // Wrap the result in a resource and return consistent API response
         return response()->json([
             'success' => true,
             'message' => 'User profile retrieved successfully',
@@ -84,8 +145,10 @@ class AuthController extends Controller
         ]);
     }
 
-
-    public function updateProfile(UpdateProfileRequest $request)
+    // -------------------------
+    // Update profile
+    // -------------------------
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $user = $this->commandBus->dispatch(
             new UpdateProfileCommand($request->user(), $request->validated())
@@ -98,15 +161,18 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
+    // -------------------------
+    // Logout
+    // -------------------------
+    public function logout(Request $request): JsonResponse
     {
-        $this->commandBus->dispatch(
-            new LogoutUserCommand($request->user())
-        );
+        $user = $request->user();
+
+        $this->commandBus->dispatch(new LogoutUserCommand($user));
 
         return response()->json([
             'success' => true,
             'message' => 'Logged out successfully',
-        ]);
+        ])->withoutCookie('refresh_token'); // clear cookie
     }
 }

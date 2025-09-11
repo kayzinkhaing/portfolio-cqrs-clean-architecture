@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Application\Commands\CrudCommand;
@@ -19,18 +20,26 @@ class ProjectController extends Controller
     public function __construct(CommandBus $commandBus, QueryBus $queryBus)
     {
         $this->commandBus = $commandBus;
-        $this->queryBus = $queryBus;
+        $this->queryBus   = $queryBus;
     }
 
+    /**
+     * List all projects with optional filters.
+     */
     public function index(Request $request)
     {
-        $result = $this->queryBus->dispatch(
+        $projects = $this->queryBus->dispatch(
             new CrudQuery('Project', 'list', $request->all())
         );
 
-        return ProjectResource::collection($result);
+        $projects->loadMissing(['technologies', 'status']);
+
+        return ProjectResource::collection($projects);
     }
 
+    /**
+     * Store a new project.
+     */
     public function store(StoreProjectRequest $request)
     {
         $project = $this->commandBus->dispatch(
@@ -40,18 +49,33 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-    public function show($id)
+    /**
+     * Show a single project by ID.
+     */
+    public function show(int $id)
     {
         $project = $this->queryBus->dispatch(
-            new CrudQuery('Project', 'get', ['id' => (int)$id])
+            new CrudQuery('Project', 'get', ['id' => $id])
         );
+
+        if (! $project) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found'
+            ], 404);
+        }
+
+        $project->loadMissing(['technologies', 'status']);
 
         return new ProjectResource($project);
     }
 
-    public function update(UpdateProjectRequest $request, $id)
+    /**
+     * Update an existing project.
+     */
+    public function update(UpdateProjectRequest $request, int $id)
     {
-        $payload = array_merge(['id' => (int)$id], $request->validated());
+        $payload = array_merge(['id' => $id], $request->validated());
 
         $project = $this->commandBus->dispatch(
             new CrudCommand('Project', 'update', $payload)
@@ -60,12 +84,15 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-    public function destroy($id)
+    /**
+     * Delete a project.
+     */
+    public function destroy(int $id)
     {
         $this->commandBus->dispatch(
-            new CrudCommand('Project', 'delete', ['id' => (int)$id])
+            new CrudCommand('Project', 'delete', ['id' => $id])
         );
 
-        return response()->json(['success' => true, 'message' => 'Project deleted']);
+        return response()->json(null, 204); // RESTful "No Content"
     }
 }

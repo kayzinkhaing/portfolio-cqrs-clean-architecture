@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Notifications\ResetPasswordNotification;
 use App\Traits\TwoFactorAuthenticatable;
 
@@ -39,7 +38,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -50,6 +49,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relationships
+     */
     public function township()
     {
         return $this->belongsTo(Township::class);
@@ -59,11 +62,34 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Ward::class);
     }
+
+    /**
+     * Polymorphic relation: A user can have many images
+     */
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
+
+    /**
+     * Get the user's primary profile image
+     */
+    public function profileImage()
+    {
+        return $this->morphOne(Image::class, 'imageable')->where('is_primary', true);
+    }
+
+    /**
+     * Send the password reset notification
+     */
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    /**
+     * Fire an event after user is created
+     */
     protected static function booted()
     {
         static::created(function ($user) {

@@ -28,3 +28,5 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+# Ignore PHP vendor inside Vue project
+/vendor

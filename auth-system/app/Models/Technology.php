@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasImages;
 use Illuminate\Support\Str;
+use App\Observers\CacheObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -41,6 +42,7 @@ class Technology extends Model
                 $technology->slug = Str::slug($technology->name);
             }
         });
+        static::observe(CacheObserver::class);
     }
 
 }

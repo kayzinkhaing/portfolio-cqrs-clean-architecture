@@ -3,60 +3,79 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master
+      - master   # or main, depending on your repo
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      # 1️⃣ Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # 2️⃣ Set up SSH agent with private key
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to DigitalOcean
-      run: |
-        ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-          set -euxo pipefail
+      # 3️⃣ Add server to known_hosts to avoid host key verification error
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-          cd /var/www/html/portfolio || {
-            echo 'Creating portfolio folder...'
-            mkdir -p /var/www/html/portfolio
-            cd /var/www/html/portfolio
-          }
+      # 4️⃣ Deploy via SSH
+      - name: Deploy to DigitalOcean
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            set -euxo pipefail
 
-          echo 'Pulling latest code...'
-          git fetch origin master
-          git reset --hard origin/master
+            # Navigate to project folder or create if missing
+            cd /var/www/html/portfolio || {
+              echo 'Creating portfolio folder...'
+              sudo mkdir -p /var/www/html/portfolio
+              cd /var/www/html/portfolio
+            }
 
-          echo 'Creating environment file...'
-          echo '${{ secrets.ENV_FILE }}' > .env.production
-          echo '${{ secrets.ENV_FRONTEND_FILE }}' > .env.frontend
+            echo 'Pulling latest code...'
+            if [ -d .git ]; then
+              git fetch origin master
+              git reset --hard origin/master
+            else
+              git clone git@github.com:<YOUR_GITHUB_USERNAME>/<YOUR_REPO>.git .
+            fi
 
-          echo 'Stopping existing containers...'
-          docker-compose -f docker-compose.prod.yml down || true
+            # Create .env files from secrets
+            echo '${{ secrets.ENV_FILE }}' > .env.production
+            echo '${{ secrets.ENV_FRONTEND_FILE }}' > .env.frontend
 
-          echo 'Starting containers...'
-          docker-compose -f docker-compose.prod.yml up -d --build
+            # Stop existing Docker containers
+            echo 'Stopping existing containers...'
+            docker-compose -f docker-compose.prod.yml down || true
 
-          echo 'Waiting for Laravel container to start...'
-          sleep 30
+            # Start containers
+            echo 'Starting containers...'
+            docker-compose -f docker-compose.prod.yml up -d --build
 
-          echo 'Running Laravel commands...'
-          docker exec laravel-backend php artisan key:generate --force
-          docker exec laravel-backend php artisan migrate --force
-          docker exec laravel-backend php artisan storage:link || true
-          docker exec laravel-backend php artisan config:clear
-          docker exec laravel-backend php artisan cache:clear
-          docker exec laravel-backend php artisan route:clear
-          docker exec laravel-backend php artisan view:clear
+            # Wait for Laravel container to be ready
+            echo 'Waiting for Laravel container to start...'
+            sleep 30
 
-          echo 'Reloading Nginx...'
-          sudo nginx -s reload
+            # Run Laravel commands
+            echo 'Running Laravel commands...'
+            docker exec laravel-backend php artisan key:generate --force
+            docker exec laravel-backend php artisan migrate --force
+            docker exec laravel-backend php artisan storage:link || true
+            docker exec laravel-backend php artisan config:clear
+            docker exec laravel-backend php artisan cache:clear
+            docker exec laravel-backend php artisan route:clear
+            docker exec laravel-backend php artisan view:clear
 
-          echo 'Deployment completed successfully!'
-        "
+            # Reload Nginx
+            echo 'Reloading Nginx...'
+            sudo nginx -s reload
+
+            echo 'Deployment completed successfully!'
+          "

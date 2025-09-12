@@ -40,12 +40,14 @@ jobs:
             }
 
             echo 'Pulling latest code...'
+            # Inside your SSH deploy step
             if [ -d .git ]; then
-              git fetch origin master
-              git reset --hard origin/master
+            git fetch origin master
+            git reset --hard origin/master
             else
-              git clone git@github.com:<YOUR_GITHUB_USERNAME>/<YOUR_REPO>.git .
+            git clone git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
+
 
             # Create .env files from secrets
             echo '${{ secrets.ENV_FILE }}' > .env.production

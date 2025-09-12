@@ -3,70 +3,69 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master   # or main, depending on your repo
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up SSH agent with private key
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3️⃣ Add server to known_hosts to avoid host key verification error
       - name: Add server to known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      # 4️⃣ Deploy via SSH
       - name: Deploy to DigitalOcean
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
 
-            # Navigate to project folder or create if missing
-            cd /var/www/html/portfolio || {
-              echo 'Creating portfolio folder...'
-              sudo mkdir -p /var/www/html/portfolio
-              cd /var/www/html/portfolio
-            }
+            PROJECT_DIR=/var/www/html/portfolio
+            REPO_URL=git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git
+            BRANCH=master
 
-            echo 'Pulling latest code...'
-            # Inside your SSH deploy step
-            if [ -d .git ]; then
-            git fetch origin master
-            git reset --hard origin/master
-            else
-            git clone git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+            # Ensure project folder exists
+            if [ ! -d "$PROJECT_DIR" ]; then
+              mkdir -p "$PROJECT_DIR"
             fi
 
+            cd "$PROJECT_DIR"
+
+            # If it's a git repo, fetch & reset, else clone
+            if [ -d .git ]; then
+              echo 'Pulling latest code...'
+              git fetch origin "$BRANCH"
+              git reset --hard "origin/$BRANCH"
+            else
+              echo 'Cloning repository...'
+              # Make sure folder is empty
+              if [ "$(ls -A)" ]; then
+                echo "Directory not empty, cleaning..."
+                rm -rf ./*
+              fi
+              git clone "$REPO_URL" .
+            fi
 
             # Create .env files from secrets
             echo '${{ secrets.ENV_FILE }}' > .env.production
             echo '${{ secrets.ENV_FRONTEND_FILE }}' > .env.frontend
 
-            # Stop existing Docker containers
-            echo 'Stopping existing containers...'
+            # Stop and start Docker containers
             docker-compose -f docker-compose.prod.yml down || true
-
-            # Start containers
-            echo 'Starting containers...'
             docker-compose -f docker-compose.prod.yml up -d --build
 
-            # Wait for Laravel container to be ready
-            echo 'Waiting for Laravel container to start...'
+            # Wait for Laravel container to start
             sleep 30
 
             # Run Laravel commands
-            echo 'Running Laravel commands...'
             docker exec laravel-backend php artisan key:generate --force
             docker exec laravel-backend php artisan migrate --force
             docker exec laravel-backend php artisan storage:link || true
@@ -76,8 +75,7 @@ jobs:
             docker exec laravel-backend php artisan view:clear
 
             # Reload Nginx
-            echo 'Reloading Nginx...'
             sudo nginx -s reload
 
             echo 'Deployment completed successfully!'
-          "
+          EOF

@@ -4,12 +4,12 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-2xl font-bold text-indigo-600">Edit Profile</h2>
-      <router-link
+      <!-- <router-link
         to="/settings"
         class="text-sm text-gray-500 hover:text-indigo-600 transition"
       >
         ← Back
-      </router-link>
+      </router-link> -->
     </div>
 
     <!-- Loading spinner -->

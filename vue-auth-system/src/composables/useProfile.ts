@@ -51,7 +51,7 @@ export function useProfile() {
 
   onMounted(async () => {
     try {
-      if (!auth.user) await auth.fetchUser()
+      if (!auth.user) await auth.fetchProfile()
       const townshipsRes = await getTownships()
       townships.value = townshipsRes.data
       await loadWards()

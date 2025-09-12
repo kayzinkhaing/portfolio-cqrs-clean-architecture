@@ -1,0 +1,62 @@
+name: Deploy Portfolio
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to DigitalOcean
+      run: |
+        ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          set -euxo pipefail
+
+          cd /var/www/html/portfolio || {
+            echo 'Creating portfolio folder...'
+            mkdir -p /var/www/html/portfolio
+            cd /var/www/html/portfolio
+          }
+
+          echo 'Pulling latest code...'
+          git fetch origin master
+          git reset --hard origin/master
+
+          echo 'Creating environment file...'
+          echo '${{ secrets.ENV_FILE }}' > .env.production
+          echo '${{ secrets.ENV_FRONTEND_FILE }}' > .env.frontend
+
+          echo 'Stopping existing containers...'
+          docker-compose -f docker-compose.prod.yml down || true
+
+          echo 'Starting containers...'
+          docker-compose -f docker-compose.prod.yml up -d --build
+
+          echo 'Waiting for Laravel container to start...'
+          sleep 30
+
+          echo 'Running Laravel commands...'
+          docker exec laravel-backend php artisan key:generate --force
+          docker exec laravel-backend php artisan migrate --force
+          docker exec laravel-backend php artisan storage:link || true
+          docker exec laravel-backend php artisan config:clear
+          docker exec laravel-backend php artisan cache:clear
+          docker exec laravel-backend php artisan route:clear
+          docker exec laravel-backend php artisan view:clear
+
+          echo 'Reloading Nginx...'
+          sudo nginx -s reload
+
+          echo 'Deployment completed successfully!'
+        "

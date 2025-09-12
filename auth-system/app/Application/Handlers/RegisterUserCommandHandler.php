@@ -6,7 +6,7 @@ namespace App\Application\Handlers;
 use App\Application\Commands\RegisterUserCommand;
 use App\Services\UserService;
 
-class RegisterUserHandler
+class RegisterUserCommandHandler
 {
     protected UserService $userService;
 

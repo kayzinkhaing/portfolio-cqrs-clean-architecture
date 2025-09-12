@@ -79,9 +79,9 @@ class ProjectCacheService extends MongoCacheService
             'created_at' => $project['created_at'] ?? null,
             'updated_at' => $project['updated_at'] ?? null,
             // 'deleted_at' => $project['deleted_at'] ?? null,
-            'deleted_at'   => array_key_exists('deleted_at', $project)
-            ? ($project['deleted_at']?->toDateTimeString() ?? null)
-            : null,
+            // 'deleted_at'   => array_key_exists('deleted_at', $project)
+            // ? ($project['deleted_at']?->toDateTimeString() ?? null)
+            // : null,
         ];
     }
 

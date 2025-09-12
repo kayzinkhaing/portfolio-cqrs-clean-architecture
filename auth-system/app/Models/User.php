@@ -68,7 +68,7 @@ class User extends Authenticatable
      */
     public function images()
     {
-        return $this->morphMany(Image::class, 'imageable');
+        return $this->morphMany(Media::class, 'imageable');
     }
 
     /**
@@ -76,7 +76,7 @@ class User extends Authenticatable
      */
     public function profileImage()
     {
-        return $this->morphOne(Image::class, 'imageable')->where('is_primary', true);
+        return $this->morphOne(Media::class, 'imageable')->where('is_primary', true);
     }
 
     /**

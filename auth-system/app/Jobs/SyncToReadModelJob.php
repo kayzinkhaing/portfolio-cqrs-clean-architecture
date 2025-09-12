@@ -4,30 +4,32 @@ namespace App\Jobs;
 
 use App\Services\MongoService;
 use App\Events\ModelChangedBroadcast;
+use App\Events\ContactMessageSyncedToMongo;
 use Illuminate\Support\Str;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Bus\Queueable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use App\Events\ContactMessageSyncedToMongo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SyncToReadModelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Model $model;
+    protected string $modelClass;
+    protected array $data;    // Full model + relations
     protected string $action;
 
     // Retry settings
     public $tries = 5;
     public $backoff = [10, 30, 60];
 
-    public function __construct(Model $model, string $action = 'update')
+    public function __construct(string $modelClass, array $data, string $action = 'update')
     {
-        $this->model = $model;
+        $this->modelClass = $modelClass;
+        $this->data = $this->convertDates($data); // Ensure Carbon -> string
         $this->action = $action;
     }
 
@@ -37,89 +39,74 @@ class SyncToReadModelJob implements ShouldQueue
             $mongo = MongoService::getClient();
             $db = $mongo->selectDatabase('read_model');
 
-            $collectionName = Str::plural(Str::snake(class_basename($this->model)));
+            $collectionName = Str::plural(Str::snake(class_basename($this->modelClass)));
             $collection = $db->selectCollection($collectionName);
 
             // Handle delete action
             if ($this->action === 'delete') {
-                $collection->deleteOne(['id' => $this->model->id]);
-                Log::info("Deleted {$collectionName} ID {$this->model->id} from MongoDB");
+                $usesSoftDeletes = in_array(
+                    SoftDeletes::class,
+                    class_uses_recursive($this->modelClass)
+                );
+
+                if ($usesSoftDeletes) {
+                    // Mark as soft deleted in Mongo
+                    $collection->updateOne(
+                        ['id' => $this->data['id']],
+                        ['$set' => ['deleted_at' => now()->toDateTimeString()]],
+                        ['upsert' => true]
+                    );
+                    Log::info("Soft-deleted {$collectionName} ID {$this->data['id']} in MongoDB");
+                } else {
+                    // Hard delete in Mongo
+                    $collection->deleteOne(['id' => $this->data['id']]);
+                    Log::info("Hard-deleted {$collectionName} ID {$this->data['id']} from MongoDB");
+                }
 
                 event(new ModelChangedBroadcast(
-                    get_class($this->model),
-                    $this->model->id,
+                    $this->modelClass,
+                    $this->data['id'],
                     'delete',
-                    ['id' => $this->model->id] // minimal payload
+                    ['id' => $this->data['id']]
                 ));
 
                 return;
             }
 
-            // Serialize model including relations
-            $data = $this->serializeModel($this->model);
-
-            // Upsert into Mongo
+            // Upsert the model + relations into MongoDB
             $collection->updateOne(
-                ['id' => $this->model->id],
-                ['$set' => $data],
+                ['id' => $this->data['id']],
+                ['$set' => $this->data],
                 ['upsert' => true]
             );
 
-            ContactMessageSyncedToMongo::dispatch($data);
+            // Dispatch optional event
+            ContactMessageSyncedToMongo::dispatch($this->data);
 
-            Log::info("Synced {$collectionName} ID {$this->model->id} to MongoDB successfully");
+            Log::info("Synced {$collectionName} ID {$this->data['id']} to MongoDB successfully");
 
-            // Broadcast event for real-time frontend updates
+            // Broadcast for frontend real-time updates
             $payload = [
-                'id' => $this->model->id,
-                'name' => $this->model->name ?? null,
-                'status' => $this->model->is_read ?? null,
+                'id' => $this->data['id'],
+                'name' => $this->data['name'] ?? null,
+                'status' => $this->data['is_read'] ?? null,
             ];
 
             event(new ModelChangedBroadcast(
-                get_class($this->model),
-                $this->model->id,
+                $this->modelClass,
+                $this->data['id'],
                 $this->action,
                 $payload
             ));
 
         } catch (\Throwable $e) {
-            Log::error("SyncToReadModelJob failed for ".get_class($this->model)." ID {$this->model->id}: {$e->getMessage()}");
-            throw $e;
+            Log::error("SyncToReadModelJob failed for {$this->modelClass} ID {$this->data['id']}: {$e->getMessage()}");
+            throw $e; // Let the queue retry
         }
     }
 
     /**
-     * Recursively serialize model including relations and pivot data
-     */
-    protected function serializeModel(Model $model): array
-    {
-        $array = $model->toArray();
-
-        foreach ($model->getRelations() as $relationName => $relationData) {
-            if ($relationData instanceof \Illuminate\Support\Collection) {
-                $array[$relationName] = $relationData->map(function ($item) {
-                    if ($item instanceof Model) {
-                        if (isset($item->pivot)) {
-                            $item->pivot = $item->pivot->toArray();
-                        }
-                        return $this->serializeModel($item);
-                    }
-                    return $item;
-                })->toArray();
-            } elseif ($relationData instanceof Model) {
-                if (isset($relationData->pivot)) {
-                    $relationData->pivot = $relationData->pivot->toArray();
-                }
-                $array[$relationName] = $this->serializeModel($relationData);
-            }
-        }
-
-        return $this->convertDates($array);
-    }
-
-    /**
-     * Convert all Carbon instances to string recursively
+     * Recursively convert Carbon dates to strings
      */
     protected function convertDates(array $data): array
     {

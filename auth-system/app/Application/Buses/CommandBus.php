@@ -2,23 +2,37 @@
 
 namespace App\Application\Buses;
 
-use App\Application\Handlers\CrudCommandHandler;
 use App\Traits\RetryableAction;
+use Illuminate\Contracts\Container\Container;
 
 class CommandBus
 {
     use RetryableAction;
 
-    protected CrudCommandHandler $handler;
+    protected Container $container;
 
-    public function __construct(CrudCommandHandler $handler)
+    public function __construct(Container $container)
     {
-        $this->handler = $handler;
+        $this->container = $container;
     }
 
     public function dispatch($command)
     {
-        // All command handling now automatically has retry + logging
-        return $this->retry(fn() => $this->handler->handle($command));
+        $handlerClass = $this->getHandlerClass($command);
+
+        if (! class_exists($handlerClass)) {
+            throw new \RuntimeException("Handler [$handlerClass] not found for command " . get_class($command));
+        }
+
+        $handler = $this->container->make($handlerClass);
+
+        return $this->retry(fn() => $handler->handle($command));
+    }
+
+    protected function getHandlerClass($command): string
+    {
+        // Convention: Replace "Command" with "Handler"
+        return str_replace('Commands', 'Handlers', get_class($command)) . 'Handler';
     }
 }
+

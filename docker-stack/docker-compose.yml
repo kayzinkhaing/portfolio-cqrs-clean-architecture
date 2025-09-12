@@ -24,6 +24,7 @@ services:
       - ../auth-system/routes:/var/www/routes:cached
       - ../auth-system/config:/var/www/config:cached
       - ../auth-system/graphql:/var/www/graphql:cached
+      - ../auth-system/database:/var/www/database:cached
       - /var/www/vendor 
       - /var/www/storage 
     expose:

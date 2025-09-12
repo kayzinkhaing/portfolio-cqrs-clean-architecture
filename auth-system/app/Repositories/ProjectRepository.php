@@ -59,7 +59,7 @@ class ProjectRepository extends BaseRepository
      */
     public function allWithRelations()
     {
-        return Project::with(['technologies', 'status'])->get();
+        return Project::with(['technologies', 'status'])->withTrashed()->get();
     }
     public function findWithRelations(int $id)
     {

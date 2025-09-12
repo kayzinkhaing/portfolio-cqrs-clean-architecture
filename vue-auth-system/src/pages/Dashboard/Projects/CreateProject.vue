@@ -1,117 +1,117 @@
 <template>
-  <div class="max-w-3xl mx-auto py-10">
-    <h1 class="text-2xl font-bold mb-6">Create New Project</h1>
+  <div class="max-w-2xl mx-auto py-4">
+    <h1 class="text-lg font-semibold mb-3">Create New Project</h1>
 
     <!-- Form -->
     <form
       @submit.prevent="submitForm"
-      class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-4"
+      class="bg-white dark:bg-gray-800 shadow rounded-lg p-3 space-y-2"
     >
       <!-- Title -->
       <div>
-        <label class="block text-sm font-medium mb-1" for="title">Title *</label>
+        <label class="block text-sm font-medium mb-0.5" for="title">Title *</label>
         <input
           v-model="form.title"
           id="title"
           type="text"
-          class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-          placeholder="Enter project title"
+          class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-sm"
+          placeholder="Project title"
         />
-        <p v-if="errors.title" class="text-red-500 text-sm mt-1">{{ errors.title }}</p>
+        <p v-if="errors.title" class="text-red-500 text-xs mt-0.5">{{ errors.title }}</p>
       </div>
 
       <!-- Description -->
       <div>
-        <label class="block text-sm font-medium mb-1" for="description">Description</label>
+        <label class="block text-sm font-medium mb-0.5" for="description">Description</label>
         <textarea
           v-model="form.description"
           id="description"
-          rows="4"
-          class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-          placeholder="Enter project description"
+          rows="2"
+          class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-sm"
+          placeholder="Project description"
         ></textarea>
-        <p v-if="errors.description" class="text-red-500 text-sm mt-1">{{ errors.description }}</p>
+        <p v-if="errors.description" class="text-red-500 text-xs mt-0.5">{{ errors.description }}</p>
       </div>
 
       <!-- Status -->
       <div>
-        <label class="block text-sm font-medium mb-1" for="status">Status *</label>
+        <label class="block text-sm font-medium mb-0.5" for="status">Status *</label>
         <select
           v-model="form.status_id"
           id="status"
-          class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+          class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-sm"
         >
           <option value="">Select status</option>
           <option v-for="status in statuses" :key="status.id" :value="status.id">
             {{ status.name }}
           </option>
         </select>
-        <p v-if="errors.status_id" class="text-red-500 text-sm mt-1">{{ errors.status_id }}</p>
+        <p v-if="errors.status_id" class="text-red-500 text-xs mt-0.5">{{ errors.status_id }}</p>
       </div>
 
       <!-- Technologies -->
       <div>
-        <label class="block text-sm font-medium mb-1">Technologies</label>
-        <div class="flex flex-wrap gap-2">
+        <label class="block text-sm font-medium mb-0.5">Technologies</label>
+        <div class="flex flex-wrap gap-1">
           <label
             v-for="tech in technologies"
             :key="tech.id"
-            class="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800 transition"
+            class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800 text-xs"
           >
             <input
               type="checkbox"
-              class="mr-2"
+              class="mr-1"
               :value="tech.id"
               v-model="form.technology_ids"
             />
             {{ tech.name }}
           </label>
         </div>
-        <p v-if="errors.technology_ids" class="text-red-500 text-sm mt-1">{{ errors.technology_ids }}</p>
+        <p v-if="errors.technology_ids" class="text-red-500 text-xs mt-0.5">{{ errors.technology_ids }}</p>
       </div>
 
       <!-- Dates -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
         <div>
-          <label class="block text-sm font-medium mb-1" for="start_date">Start Date *</label>
+          <label class="block text-sm font-medium mb-0.5" for="start_date">Start *</label>
           <input
             v-model="form.start_date"
             id="start_date"
             type="date"
-            class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+            class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-sm"
           />
-          <p v-if="errors.start_date" class="text-red-500 text-sm mt-1">{{ errors.start_date }}</p>
+          <p v-if="errors.start_date" class="text-red-500 text-xs mt-0.5">{{ errors.start_date }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1" for="end_date">End Date *</label>
+          <label class="block text-sm font-medium mb-0.5" for="end_date">End *</label>
           <input
             v-model="form.end_date"
             id="end_date"
             type="date"
-            class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+            class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-sm"
           />
-          <p v-if="errors.end_date" class="text-red-500 text-sm mt-1">{{ errors.end_date }}</p>
+          <p v-if="errors.end_date" class="text-red-500 text-xs mt-0.5">{{ errors.end_date }}</p>
         </div>
       </div>
 
       <!-- Featured -->
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="is_featured" v-model="form.is_featured" />
-        <label for="is_featured" class="text-sm font-medium">Featured Project</label>
+      <div class="flex items-center gap-1">
+        <input type="checkbox" id="is_featured" v-model="form.is_featured" class="w-3 h-3"/>
+        <label for="is_featured" class="text-sm font-medium">Featured</label>
       </div>
 
       <!-- Submit -->
-      <div class="pt-4 flex items-center gap-4">
+      <div class="pt-2 flex items-center gap-1">
         <button
           type="submit"
           :disabled="submitting"
-          class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 transition"
+          class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm disabled:opacity-50 transition"
         >
-          {{ submitting ? "Creating..." : "Create Project" }}
+          {{ submitting ? "Creating..." : "Create" }}
         </button>
         <RouterLink
           to="/dashboard/projects"
-          class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition"
+          class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm transition"
         >
           Cancel
         </RouterLink>

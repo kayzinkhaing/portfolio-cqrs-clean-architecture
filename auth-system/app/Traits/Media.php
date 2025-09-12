@@ -2,54 +2,83 @@
 
 namespace App\Traits;
 
-use App\Models\Type;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 trait Media
 {
-    public function attachMedia(Model $model, \Illuminate\Http\UploadedFile $file, string $typeName): void
+    /**
+     * Attach media (image/video) to a model
+     *
+     * @param Model $model
+     * @param UploadedFile|UploadedFile[] $files
+     * @param string $type 'image' or 'video'
+     * @param bool $isPrimary
+     */
+    protected function attachMedia(Model $model, $files, string $type, bool $isPrimary = false): void
     {
-        // dd($model, $file, $typeName);
-        // dd($typeName);
-        // $type = Type::where('name', $typeName)->first();
-        // // dd($type);
-        // if (!$type) return;
+        $files = is_array($files) ? $files : [$files];
 
-        // $folder = "uploads/{$model->getTable()}";
-        // $filePath = $file->store($folder, 'public');
-        // $model->medias()->create([
-        //     'type_id' => $type->id,
-        //     'url' => $filePath,
-        // ]);
+        foreach ($files as $file) {
+            if (!$file instanceof UploadedFile) continue;
+
+            $path = $file->store("media/{$type}", 'public');
+
+            $model->media()->create([
+                'path' => $path,
+                'alt' => $file->getClientOriginalName(),
+                'type' => $type,
+                'is_primary' => $isPrimary,
+            ]);
+        }
     }
 
-    public function updateMedia(Model $model, \Illuminate\Http\UploadedFile $file, string $typeName): void
-        {
-            // $type = Type::where('name', $typeName)->first();
-            // if (!$type) return;
-
-            // $folder = "uploads/{$model->getTable()}";
-            // $filePath = $file->store($folder, 'public');
-
-            // $existingMedia = $model->medias()
-            //     ->where('type_id', $type->id)
-            //     ->latest()
-            //     ->first();
-
-            // if ($existingMedia) {
-            //     Storage::disk('public')->delete($existingMedia->url);
-
-            //     $existingMedia->update([
-            //         'url' => $filePath,
-            //     ]);
-        //     } else {
-        //         $model->medias()->create([
-        //             'type_id' => $type->id,
-        //             'url' => $filePath,
-        //         ]);
-        //     }
+    /**
+     * Update media (replace existing)
+     *
+     * @param Model $model
+     * @param UploadedFile|UploadedFile[] $files
+     * @param string $type
+     * @param bool $isPrimary
+     */
+    protected function updateMedia(Model $model, $files, string $type, bool $isPrimary = false): void
+    {
+        // Delete old media of this type
+        $oldMedia = $model->media()->where('type', $type)->get();
+        foreach ($oldMedia as $media) {
+            Storage::disk('public')->delete($media->path);
+            $media->delete();
         }
 
-}
+        // Attach new media
+        $this->attachMedia($model, $files, $type, $isPrimary);
+    }
 
+    /**
+     * Detach specific media by IDs
+     *
+     * @param Model $model
+     * @param array $mediaIds
+     */
+    protected function detachMedia(Model $model, array $mediaIds): void
+    {
+        $media = $model->media()->whereIn('id', $mediaIds)->get();
+        foreach ($media as $item) {
+            Storage::disk('public')->delete($item->path);
+            $item->delete();
+        }
+    }
+
+    /**
+     * Get primary media of a specific type
+     *
+     * @param Model $model
+     * @param string $type
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    protected function getPrimaryMedia(Model $model, string $type)
+    {
+        return $model->media()->where('type', $type)->where('is_primary', true)->first();
+    }
+}

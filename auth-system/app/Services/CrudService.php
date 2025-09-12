@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Events\ModelChanged;
@@ -30,7 +31,7 @@ class CrudService
             ? $this->repository->createWithRelations($data)
             : $this->repository->create($data);
 
-            // dd($entity);
+        // dd($entity);
 
         $this->dispatchModelChangedEvent($entity, 'create');
 
@@ -56,20 +57,22 @@ class CrudService
 
     public function delete(int $id)
     {
-        $entity = $this->repository->findById($id);
-        if ($entity) {
-            $entity->delete();
+        $deleted = $this->repository->delete($id);
+
+        if ($deleted) {
             $this->dispatchModelChangedEvent($id, 'delete');
         }
-        return true;
+
+        return $deleted;
     }
+
 
     /** Dispatch domain event instead of direct job */
     protected function dispatchModelChangedEvent($model, string $action = 'update')
-{
-    // $model can be any Eloquent model
-    event(new ModelChanged($model, $action));
-}
+    {
+        // $model can be any Eloquent model
+        event(new ModelChanged($model, $action));
+    }
 
 
     /** Dynamically sync pivot relationships if any */

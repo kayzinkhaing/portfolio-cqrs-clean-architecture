@@ -89,6 +89,7 @@ class ProjectController extends Controller
      */
     public function destroy(int $id)
     {
+        // dd($id);
         $this->commandBus->dispatch(
             new CrudCommand('Project', 'delete', ['id' => $id])
         );

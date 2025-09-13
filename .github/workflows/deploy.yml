@@ -3,24 +3,24 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master   # or main, depending on your repo
+      - master   # or main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # 1️⃣ Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up SSH agent with private key
+      # 2️⃣ Set up SSH agent
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3️⃣ Add server to known_hosts to avoid host key verification errors
+      # 3️⃣ Add server to known_hosts
       - name: Add server to known_hosts
         run: |
           mkdir -p ~/.ssh
@@ -32,42 +32,43 @@ jobs:
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
             set -euxo pipefail
 
+            # Define project folders
             PROJECT_DIR=/var/www/html/portfolio
-            REPO_URL=git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git
+            LARAVEL_DIR=\$PROJECT_DIR/auth-system
+            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            # Navigate to project folder or create if missing
-            cd \$PROJECT_DIR || {
-              echo 'Creating portfolio folder...'
+            # Navigate to project folder
+            cd \$PROJECT_DIR || { 
+              echo 'Creating project folder...'
               sudo mkdir -p \$PROJECT_DIR
               cd \$PROJECT_DIR
             }
 
-            # Pull latest code safely
+            # Pull or clone repo
             if [ -d .git ]; then
               echo 'Pulling latest code...'
               git fetch origin \$BRANCH
               git reset --hard origin/\$BRANCH
             else
               echo 'Cloning repository...'
-              git clone -b \$BRANCH \$REPO_URL .
+              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             # Create .env files from GitHub Secrets
-            echo \"\${{ secrets.ENV_FILE }}\" > .env.production
-            echo \"\${{ secrets.ENV_FRONTEND_FILE }}\" > .env.frontend
-            cp .env.production ../auth-system/.env
-            sudo chown \$USER:\$USER ../auth-system/.env .env.production .env.frontend
+            echo \"\${{ secrets.ENV_FILE }}\" > \$LARAVEL_DIR/.env
+            echo \"\${{ secrets.ENV_FRONTEND_FILE }}\" > \$FRONTEND_DIR/.env
+            sudo chown \$USER:\$USER \$LARAVEL_DIR/.env \$FRONTEND_DIR/.env
 
-            # Stop existing Docker containers
+            # Stop existing containers
             echo 'Stopping existing containers...'
             docker compose -f docker-stack/docker-compose.yml down || true
 
-            # Start Docker containers
+            # Start containers
             echo 'Starting containers...'
             docker compose -f docker-stack/docker-compose.yml up -d --build
 
-            # Wait for Laravel to be ready
+            # Wait for Laravel container to be ready
             until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do
               echo 'Waiting for Laravel...'
               sleep 5
@@ -82,9 +83,9 @@ jobs:
             docker exec laravel-backend php artisan route:clear
             docker exec laravel-backend php artisan view:clear
 
-            # Reload Nginx (inside container)
+            # Reload Nginx
             echo 'Reloading Nginx...'
-            docker exec nginx nginx -s reload || true
+            sudo nginx -s reload || true
 
             echo 'Deployment completed successfully!'
           "

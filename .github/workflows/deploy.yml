@@ -53,18 +53,19 @@ jobs:
               git clone -b \$BRANCH \$REPO_URL .
             fi
 
-            # Create .env files from GitHub Secrets (correct expansion)
+            # Create .env files from GitHub Secrets
             echo \"\${{ secrets.ENV_FILE }}\" > .env.production
             echo \"\${{ secrets.ENV_FRONTEND_FILE }}\" > .env.frontend
-            sudo chown \$USER:\$USER .env.production .env.frontend
+            cp .env.production ../auth-system/.env
+            sudo chown \$USER:\$USER ../auth-system/.env .env.production .env.frontend
 
             # Stop existing Docker containers
             echo 'Stopping existing containers...'
-            docker-compose -f docker-compose.yml down || true
+            docker compose -f docker-stack/docker-compose.yml down || true
 
             # Start Docker containers
             echo 'Starting containers...'
-            docker-compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-stack/docker-compose.yml up -d --build
 
             # Wait for Laravel to be ready
             until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do
@@ -72,7 +73,7 @@ jobs:
               sleep 5
             done
 
-            # Run Laravel artisan commands (without regenerating key)
+            # Run Laravel artisan commands
             echo 'Running Laravel commands...'
             docker exec laravel-backend php artisan migrate --force
             docker exec laravel-backend php artisan storage:link || true
@@ -81,9 +82,9 @@ jobs:
             docker exec laravel-backend php artisan route:clear
             docker exec laravel-backend php artisan view:clear
 
-            # Reload Nginx (adjust if inside Docker)
+            # Reload Nginx (inside container)
             echo 'Reloading Nginx...'
-            sudo nginx -s reload || true
+            docker exec nginx nginx -s reload || true
 
             echo 'Deployment completed successfully!'
           "

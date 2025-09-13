@@ -50,28 +50,30 @@ jobs:
               git reset --hard origin/\$BRANCH
             else
               echo 'Cloning repository...'
-              git clone \$REPO_URL .
+              git clone -b \$BRANCH \$REPO_URL .
             fi
 
-            # Create .env files from GitHub Secrets
-            echo '\${{ secrets.ENV_FILE }}' > .env.production
-            echo '\${{ secrets.ENV_FRONTEND_FILE }}' > .env.frontend
+            # Create .env files from GitHub Secrets (correct expansion)
+            echo \"\${{ secrets.ENV_FILE }}\" > .env.production
+            echo \"\${{ secrets.ENV_FRONTEND_FILE }}\" > .env.frontend
+            sudo chown \$USER:\$USER .env.production .env.frontend
 
             # Stop existing Docker containers
             echo 'Stopping existing containers...'
-            docker-compose -f docker-compose.prod.yml down || true
+            docker-compose -f docker-compose.yml down || true
 
             # Start Docker containers
             echo 'Starting containers...'
             docker-compose -f docker-compose.prod.yml up -d --build
 
-            # Wait for Laravel container to be ready
-            echo 'Waiting for Laravel container to start...'
-            sleep 30
+            # Wait for Laravel to be ready
+            until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do
+              echo 'Waiting for Laravel...'
+              sleep 5
+            done
 
-            # Run Laravel artisan commands
+            # Run Laravel artisan commands (without regenerating key)
             echo 'Running Laravel commands...'
-            docker exec laravel-backend php artisan key:generate --force
             docker exec laravel-backend php artisan migrate --force
             docker exec laravel-backend php artisan storage:link || true
             docker exec laravel-backend php artisan config:clear
@@ -79,9 +81,9 @@ jobs:
             docker exec laravel-backend php artisan route:clear
             docker exec laravel-backend php artisan view:clear
 
-            # Reload Nginx
+            # Reload Nginx (adjust if inside Docker)
             echo 'Reloading Nginx...'
-            sudo nginx -s reload
+            sudo nginx -s reload || true
 
             echo 'Deployment completed successfully!'
           "

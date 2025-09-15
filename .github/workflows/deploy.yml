@@ -73,21 +73,33 @@ jobs:
             docker compose -f docker-stack/docker-compose.yml up -d --build
 
             ##############################
-            # Wait for Laravel to be ready
+            # Wait for MySQL container to be ready
             ##############################
-            echo "Waiting for Laravel container..."
-            timeout 120 bash -c 'until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do sleep 5; done'
+            echo "Waiting for MySQL..."
+            until docker compose exec -T mysql-db mysqladmin ping -h "localhost" --silent; do
+              echo "MySQL not ready, sleeping 5 seconds..."
+              sleep 5
+            done
 
             ##############################
-            # Laravel Artisan commands
+            # Wait for Laravel container to be ready
             ##############################
-            echo "Running Laravel commands..."
-            docker exec laravel-backend php artisan migrate --force
-            docker exec laravel-backend php artisan storage:link || true
-            docker exec laravel-backend php artisan config:clear
-            docker exec laravel-backend php artisan cache:clear
-            docker exec laravel-backend php artisan route:clear
-            docker exec laravel-backend php artisan view:clear
+            echo "Waiting for Laravel container..."
+            until docker compose exec -T laravel php artisan migrate:status >/dev/null 2>&1; do
+              echo "Laravel not ready yet, sleeping 5 seconds..."
+              sleep 5
+            done
+
+            ##############################
+            # Run Laravel Artisan commands
+            ##############################
+            echo "Running Laravel Artisan commands..."
+            docker compose exec -T laravel php artisan migrate --force
+            docker compose exec -T laravel php artisan storage:link || true
+            docker compose exec -T laravel php artisan config:clear
+            docker compose exec -T laravel php artisan cache:clear
+            docker compose exec -T laravel php artisan route:clear
+            docker compose exec -T laravel php artisan view:clear
 
             ##############################
             # Reload Nginx

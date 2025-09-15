@@ -32,36 +32,36 @@ jobs:
           ENV_FILE: ${{ secrets.ENV_FILE }}
           ENV_FRONTEND_FILE: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<'EOF'
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<EOF
             set -euxo pipefail
 
             ##############################
             # Project directories
             ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=$PROJECT_DIR/auth-system
-            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
+            LARAVEL_DIR=\$PROJECT_DIR/auth-system
+            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
-            cd "$PROJECT_DIR"
+            mkdir -p "\$LARAVEL_DIR" "\$FRONTEND_DIR"
+            cd "\$PROJECT_DIR"
 
             ##############################
             # Pull or clone repository
             ##############################
             if [ -d .git ]; then
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
+              git fetch origin \$BRANCH
+              git reset --hard origin/\$BRANCH
             else
-              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             ##############################
             # Write .env files safely
             ##############################
-            printf '%s\n' "$ENV_FILE" > "$LARAVEL_DIR/.env"
-            printf '%s\n' "$ENV_FRONTEND_FILE" > "$FRONTEND_DIR/.env"
-            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
+            printf '%s\n' "$ENV_FILE" > "\$LARAVEL_DIR/.env"
+            printf '%s\n' "$ENV_FRONTEND_FILE" > "\$FRONTEND_DIR/.env"
+            chmod 600 "\$LARAVEL_DIR/.env" "\$FRONTEND_DIR/.env"
 
             ##############################
             # Stop existing containers
@@ -77,7 +77,7 @@ jobs:
             # Wait for Laravel container to be ready
             ##############################
             until docker compose exec -T laravel php artisan migrate:status >/dev/null 2>&1; do
-              echo "⏳ Waiting for Laravel..."
+              echo "⏳ Waiting for Laravel container..."
               sleep 5
             done
 

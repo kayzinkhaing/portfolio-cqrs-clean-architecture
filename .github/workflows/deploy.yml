@@ -28,40 +28,48 @@ jobs:
 
       # 4️⃣ Deploy via SSH
       - name: Deploy to DigitalOcean
+        env:
+          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
+          ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<EOF
             set -euxo pipefail
 
             ##############################
             # Project directories
             ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=$PROJECT_DIR/auth-system
-            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
+            LARAVEL_DIR=\$PROJECT_DIR/auth-system
+            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            # Create project folder if missing
-            mkdir -p "$PROJECT_DIR"
-            cd "$PROJECT_DIR"
+            mkdir -p "\$PROJECT_DIR"
+            cd "\$PROJECT_DIR"
 
+            ##############################
             # Pull or clone repository
+            ##############################
             if [ -d .git ]; then
               echo "Pulling latest code..."
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
+              git fetch origin \$BRANCH
+              git reset --hard origin/\$BRANCH
             else
               echo "Cloning repository..."
-              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             ##############################
             # Deploy .env files safely
             ##############################
-            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
-            echo "${{ secrets.ENV_FILE }}" > "$LARAVEL_DIR/.env"
-            echo "${{ secrets.ENV_FRONTEND_FILE }}" > "$FRONTEND_DIR/.env"
-            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
+            mkdir -p "\$LARAVEL_DIR" "\$FRONTEND_DIR"
 
+            # Laravel .env
+            printf '%s' "$ENV_FILE_CONTENT" | sed 's/\r\$//' > "\$LARAVEL_DIR/.env"
+
+            # Frontend .env
+            printf '%s' "$ENV_FRONTEND_CONTENT" | sed 's/\r\$//' > "\$FRONTEND_DIR/.env"
+
+            chmod 600 "\$LARAVEL_DIR/.env" "\$FRONTEND_DIR/.env"
 
             ##############################
             # Stop existing containers
@@ -73,7 +81,7 @@ jobs:
             # Build & start containers
             ##############################
             echo "Starting containers..."
-            docker compose -f docker-stack/docker-compose.yml -p portfolio up -d --build
+            docker compose -f docker-stack/docker-compose.yml -p portfolio up -d --build --remove-orphans
 
             ##############################
             # Wait for Laravel container to be ready

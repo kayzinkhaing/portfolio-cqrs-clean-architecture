@@ -31,12 +31,11 @@ WORKDIR /var/www
 # -----------------------
 # Copy composer files first for caching
 # -----------------------
- COPY composer.json ./
-
+COPY composer.json composer.lock ./
 # -----------------------
 # Install PHP dependencies
 # -----------------------
-RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --optimize-autoloader --no-scripts
 
 # -----------------------
 # Copy the rest of the application

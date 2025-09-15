@@ -32,61 +32,56 @@ jobs:
           ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
           ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<EOF
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<'EOF'
             set -euxo pipefail
 
             ##############################
             # Project directories
             ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=\$PROJECT_DIR/auth-system
-            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
+            LARAVEL_DIR=$PROJECT_DIR/auth-system
+            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            mkdir -p "\$PROJECT_DIR"
-            cd "\$PROJECT_DIR"
+            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
+            cd "$PROJECT_DIR"
 
             ##############################
             # Pull or clone repository
             ##############################
             if [ -d .git ]; then
-              echo "Pulling latest code..."
-              git fetch origin \$BRANCH
-              git reset --hard origin/\$BRANCH
+              git fetch origin $BRANCH
+              git reset --hard origin/$BRANCH
             else
-              echo "Cloning repository..."
-              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             ##############################
-            # Deploy .env files safely
+            # Write .env files safely
             ##############################
-            mkdir -p "\$LARAVEL_DIR" "\$FRONTEND_DIR"
+            cat > "$LARAVEL_DIR/.env" <<'EOL'
+            $ENV_FILE_CONTENT
+            EOL
 
-            # Laravel .env
-            printf '%s' "$ENV_FILE_CONTENT" | sed 's/\r\$//' > "\$LARAVEL_DIR/.env"
+            cat > "$FRONTEND_DIR/.env" <<'EOL'
+            $ENV_FRONTEND_CONTENT
+            EOL
 
-            # Frontend .env
-            printf '%s' "$ENV_FRONTEND_CONTENT" | sed 's/\r\$//' > "\$FRONTEND_DIR/.env"
-
-            chmod 600 "\$LARAVEL_DIR/.env" "\$FRONTEND_DIR/.env"
+            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
 
             ##############################
             # Stop existing containers
             ##############################
-            echo "Stopping existing containers..."
             docker compose -f docker-stack/docker-compose.yml down || true
 
             ##############################
             # Build & start containers
             ##############################
-            echo "Starting containers..."
             docker compose -f docker-stack/docker-compose.yml -p portfolio up -d --build --remove-orphans
 
             ##############################
             # Wait for Laravel container to be ready
             ##############################
-            echo "Waiting for Laravel container..."
             until docker compose exec -T laravel php artisan migrate:status >/dev/null 2>&1; do
               echo "Laravel not ready yet, sleeping 5 seconds..."
               sleep 5
@@ -95,7 +90,6 @@ jobs:
             ##############################
             # Run Laravel Artisan commands
             ##############################
-            echo "Running Laravel Artisan commands..."
             docker compose exec -T laravel php artisan migrate --force
             docker compose exec -T laravel php artisan storage:link || true
             docker compose exec -T laravel php artisan config:clear
@@ -106,7 +100,6 @@ jobs:
             ##############################
             # Reload Nginx
             ##############################
-            echo "Reloading Nginx..."
             sudo nginx -s reload || true
 
             echo "✅ Deployment completed successfully!"

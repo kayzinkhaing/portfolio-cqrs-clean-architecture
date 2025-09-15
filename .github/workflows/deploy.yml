@@ -73,15 +73,6 @@ jobs:
             docker compose -f docker-stack/docker-compose.yml up -d --build
 
             ##############################
-            # Wait for MySQL container to be ready
-            ##############################
-            echo "Waiting for MySQL..."
-            until docker compose exec -T mysql-db mysqladmin ping -h "localhost" --silent; do
-              echo "MySQL not ready, sleeping 5 seconds..."
-              sleep 5
-            done
-
-            ##############################
             # Wait for Laravel container to be ready
             ##############################
             echo "Waiting for Laravel container..."

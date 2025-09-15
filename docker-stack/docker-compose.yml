@@ -100,7 +100,6 @@ services:
     volumes:
       - ../vue-auth-system/src:/app/src:cached
       - ../vue-auth-system/tests:/app/tests:cached
-      - node_modules_vue:/app/node_modules
     ports:
       - "${VITE_PORT:-5173}:5173"
     environment:

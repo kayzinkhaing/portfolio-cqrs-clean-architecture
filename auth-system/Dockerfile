@@ -42,10 +42,10 @@ COPY . /var/www/html/portfolio/auth-system
 # -----------------------
 # Run artisan commands after full copy
 # -----------------------
-RUN php artisan package:discover --ansi \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# RUN php artisan package:discover --ansi \
+#     && php artisan config:cache \
+#     && php artisan route:cache \
+#     && php artisan view:cache
 
 # -----------------------
 # Set permissions

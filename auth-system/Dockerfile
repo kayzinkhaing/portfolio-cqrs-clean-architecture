@@ -31,7 +31,7 @@ WORKDIR /var/www
 # -----------------------
 # Copy composer files first for caching
 # -----------------------
-# COPY composer.json composer.lock ./
+ COPY composer.json ./
 
 # -----------------------
 # Install PHP dependencies

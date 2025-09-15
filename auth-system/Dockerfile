@@ -1,6 +1,3 @@
-# -----------------------
-# Base PHP FPM Image
-# -----------------------
 FROM php:8.2-fpm
 
 # -----------------------
@@ -19,14 +16,12 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 # -----------------------
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
-
-# Increase Composer timeout globally
 RUN composer config --global process-timeout 2000
 
 # -----------------------
 # Set working directory
 # -----------------------
-WORKDIR /var/www
+WORKDIR /var/www/html/portfolio/auth-system
 
 # -----------------------
 # Copy composer files first for caching
@@ -34,20 +29,29 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 
 # -----------------------
-# Install PHP dependencies
+# Install PHP dependencies without running scripts (artisan not present yet)
 # -----------------------
-RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --optimize-autoloader
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts --optimize-autoloader
 
 # -----------------------
-# Copy the rest of the application
+# Copy the full application code
 # -----------------------
-COPY . /var/www
+COPY . /var/www/html/portfolio/auth-system
+
+# -----------------------
+# Run artisan commands after full copy
+# -----------------------
+RUN php artisan package:discover --ansi \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
 # -----------------------
 # Set permissions
 # -----------------------
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+RUN chown -R www-data:www-data /var/www/html/portfolio/auth-system \
+    && chmod -R 755 /var/www/html/portfolio/auth-system/storage
 
 # -----------------------
 # Expose port and start PHP-FPM

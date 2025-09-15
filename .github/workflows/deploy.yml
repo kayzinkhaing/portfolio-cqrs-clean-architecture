@@ -3,7 +3,7 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master   # or main
+      - master   # Change if your main branch is different
 
 jobs:
   deploy:
@@ -11,10 +11,10 @@ jobs:
 
     steps:
       # 1️⃣ Checkout repo
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up SSH agent
+      # 2️⃣ Setup SSH agent
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -29,53 +29,59 @@ jobs:
       # 4️⃣ Deploy via SSH
       - name: Deploy to DigitalOcean
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
 
-            # Define project folders
+            ##############################
+            # Project directories
+            ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=\$PROJECT_DIR/auth-system
-            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
+            LARAVEL_DIR=$PROJECT_DIR/auth-system
+            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            # Navigate to project folder
-            cd \$PROJECT_DIR || { 
-              echo 'Creating project folder...'
-              sudo mkdir -p \$PROJECT_DIR
-              cd \$PROJECT_DIR
-            }
+            # Create project folder if missing
+            cd $PROJECT_DIR || { mkdir -p $PROJECT_DIR; cd $PROJECT_DIR; }
 
-            # Pull or clone repo
+            # Pull or clone repository
             if [ -d .git ]; then
-              echo 'Pulling latest code...'
-              git fetch origin \$BRANCH
-              git reset --hard origin/\$BRANCH
+              echo "Pulling latest code..."
+              git fetch origin $BRANCH
+              git reset --hard origin/$BRANCH
             else
-              echo 'Cloning repository...'
-              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              echo "Cloning repository..."
+              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
-            # Create .env files from GitHub Secrets
-            echo \"\${{ secrets.ENV_FILE }}\" > \$LARAVEL_DIR/.env
-            echo \"\${{ secrets.ENV_FRONTEND_FILE }}\" > \$FRONTEND_DIR/.env
-            sudo chown \$USER:\$USER \$LARAVEL_DIR/.env \$FRONTEND_DIR/.env
+            ##############################
+            # Deploy .env files safely
+            ##############################
+            echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 -d > $LARAVEL_DIR/.env
+            echo "${{ secrets.ENV_FRONTEND_FILE_BASE64 }}" | base64 -d > $FRONTEND_DIR/.env
+            sudo chown $USER:$USER $LARAVEL_DIR/.env $FRONTEND_DIR/.env
 
+            ##############################
             # Stop existing containers
-            echo 'Stopping existing containers...'
+            ##############################
+            echo "Stopping existing containers..."
             docker compose -f docker-stack/docker-compose.yml down || true
 
-            # Start containers
-            echo 'Starting containers...'
+            ##############################
+            # Build & start containers
+            ##############################
+            echo "Starting containers..."
             docker compose -f docker-stack/docker-compose.yml up -d --build
 
-            # Wait for Laravel container to be ready
-            until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do
-              echo 'Waiting for Laravel...'
-              sleep 5
-            done
+            ##############################
+            # Wait for Laravel to be ready
+            ##############################
+            echo "Waiting for Laravel container..."
+            timeout 120 bash -c 'until docker exec laravel-backend php artisan migrate:status > /dev/null 2>&1; do sleep 5; done'
 
-            # Run Laravel artisan commands
-            echo 'Running Laravel commands...'
+            ##############################
+            # Laravel Artisan commands
+            ##############################
+            echo "Running Laravel commands..."
             docker exec laravel-backend php artisan migrate --force
             docker exec laravel-backend php artisan storage:link || true
             docker exec laravel-backend php artisan config:clear
@@ -83,9 +89,11 @@ jobs:
             docker exec laravel-backend php artisan route:clear
             docker exec laravel-backend php artisan view:clear
 
+            ##############################
             # Reload Nginx
-            echo 'Reloading Nginx...'
+            ##############################
+            echo "Reloading Nginx..."
             sudo nginx -s reload || true
 
-            echo 'Deployment completed successfully!'
-          "
+            echo "✅ Deployment completed successfully!"
+          EOF

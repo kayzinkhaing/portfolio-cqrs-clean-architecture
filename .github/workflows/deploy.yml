@@ -3,14 +3,14 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master   # Change if your main branch is different
+      - master  # Change if your main branch is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -41,7 +41,8 @@ jobs:
             BRANCH=master
 
             # Create project folder if missing
-            cd $PROJECT_DIR || { mkdir -p $PROJECT_DIR; cd $PROJECT_DIR; }
+            mkdir -p "$PROJECT_DIR"
+            cd "$PROJECT_DIR"
 
             # Pull or clone repository
             if [ -d .git ]; then
@@ -56,9 +57,10 @@ jobs:
             ##############################
             # Deploy .env files safely
             ##############################
-            echo "${{ secrets.ENV_FILE }}" | base64 -d > $LARAVEL_DIR/.env
-            echo "${{ secrets.ENV_FRONTEND_FILE }}" | base64 -d > $FRONTEND_DIR/.env
-            sudo chown $USER:$USER $LARAVEL_DIR/.env $FRONTEND_DIR/.env
+            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
+            echo "${{ secrets.ENV_FILE }}" | base64 -d > "$LARAVEL_DIR/.env"
+            echo "${{ secrets.ENV_FRONTEND_FILE }}" | base64 -d > "$FRONTEND_DIR/.env"
+            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
 
             ##############################
             # Stop existing containers

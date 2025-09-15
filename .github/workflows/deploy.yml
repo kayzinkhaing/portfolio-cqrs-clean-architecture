@@ -28,6 +28,9 @@ jobs:
 
       # 4️⃣ Deploy via SSH
       - name: Deploy to DigitalOcean
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+          ENV_FRONTEND_FILE: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
@@ -59,8 +62,8 @@ jobs:
             ##############################
             # Deploy .env files safely (Base64)
             ##############################
-            echo "${{ secrets.ENV_FILE }}" | base64 -d > "$LARAVEL_DIR/.env"
-            echo "${{ secrets.ENV_FRONTEND_FILE }}" | base64 -d > "$FRONTEND_DIR/.env"
+            echo "$ENV_FILE" | base64 -d > "$LARAVEL_DIR/.env"
+            echo "$ENV_FRONTEND_FILE" | base64 -d > "$FRONTEND_DIR/.env"
             chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
 
             ##############################

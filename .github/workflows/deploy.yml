@@ -73,7 +73,7 @@ jobs:
             # Build & start containers
             ##############################
             echo "Starting containers..."
-            docker compose -p portfolio up -d --build
+            docker compose -f docker-stack/docker-compose.yml -p portfolio up -d --build
 
             ##############################
             # Wait for Laravel container to be ready

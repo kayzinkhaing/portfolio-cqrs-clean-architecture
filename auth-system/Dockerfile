@@ -32,7 +32,7 @@ COPY composer.json composer.lock ./
 # Install PHP dependencies without running scripts (artisan not present yet)
 # -----------------------
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts --no-dev --optimize-autoloader
 
 # -----------------------
 # Copy the full application code

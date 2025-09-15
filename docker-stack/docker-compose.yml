@@ -28,7 +28,6 @@ services:
       - ../auth-system/database:/var/www/html/portfolio/auth-system/database:cached
 
       # Let container manage heavy folders for performance
-      - /var/www/html/portfolio/auth-system/vendor
       - /var/www/html/portfolio/auth-system/storage
     expose:
       - "9000"
@@ -61,7 +60,6 @@ services:
     restart: always
     volumes:
       - ../auth-system/app:/var/www/html/portfolio/auth-system/app:cached
-      - /var/www/html/portfolio/auth-system/vendor
       - /var/www/html/portfolio/auth-system/storage
     env_file:
       - ../auth-system/.env

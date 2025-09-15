@@ -10,59 +10,80 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup SSH agent
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # 3️⃣ Add server to known_hosts
       - name: Add server to known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
+      # 4️⃣ Deploy via SSH
       - name: Deploy to DigitalOcean
         env:
-          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
-          ENV_FRONTEND_CONTENT: ${{ secrets.ENV_FRONTEND_FILE }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+          ENV_FRONTEND_FILE: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
-          # 1) ensure repo exists & pull latest
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<'REMOTE'
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s <<'EOF'
             set -euxo pipefail
+
+            ##############################
+            # Project directories
+            ##############################
             PROJECT_DIR=/var/www/html/portfolio
+            LARAVEL_DIR=$PROJECT_DIR/auth-system
+            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
             BRANCH=master
-            mkdir -p "$PROJECT_DIR"
+
+            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
             cd "$PROJECT_DIR"
+
+            ##############################
+            # Pull or clone repository
+            ##############################
             if [ -d .git ]; then
               git fetch origin $BRANCH
               git reset --hard origin/$BRANCH
             else
               git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
-          REMOTE
 
-          # 2) upload Laravel .env (preserve multiline exactly; remove CRLF)
-          printf '%s' "$ENV_FILE_CONTENT" | ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'sed "s/\r$//" > /var/www/html/portfolio/auth-system/.env && chmod 600 /var/www/html/portfolio/auth-system/.env'
+            ##############################
+            # Write .env files safely
+            ##############################
+            printf '%s\n' "$ENV_FILE" > "$LARAVEL_DIR/.env"
+            printf '%s\n' "$ENV_FRONTEND_FILE" > "$FRONTEND_DIR/.env"
+            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
 
-          # 3) upload Frontend .env
-          printf '%s' "$ENV_FRONTEND_CONTENT" | ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'sed "s/\r$//" > /var/www/html/portfolio/vue-auth-system/.env && chmod 600 /var/www/html/portfolio/vue-auth-system/.env'
-
-          # 4) run docker-compose and artisan commands remotely
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<'REMOTE'
-            set -euxo pipefail
-            cd /var/www/html/portfolio
-
+            ##############################
+            # Stop existing containers
+            ##############################
             docker compose -f docker-stack/docker-compose.yml down || true
+
+            ##############################
+            # Build & start containers
+            ##############################
             docker compose -f docker-stack/docker-compose.yml -p portfolio up -d --build --remove-orphans
 
-            # wait until laravel container responds to artisan status
+            ##############################
+            # Wait for Laravel container to be ready
+            ##############################
             until docker compose exec -T laravel php artisan migrate:status >/dev/null 2>&1; do
-              echo "Laravel not ready yet; sleeping 5s..."
+              echo "⏳ Waiting for Laravel..."
               sleep 5
             done
 
+            ##############################
+            # Run Laravel Artisan commands
+            ##############################
             docker compose exec -T laravel php artisan migrate --force
             docker compose exec -T laravel php artisan storage:link || true
             docker compose exec -T laravel php artisan config:clear
@@ -70,5 +91,10 @@ jobs:
             docker compose exec -T laravel php artisan route:clear
             docker compose exec -T laravel php artisan view:clear
 
+            ##############################
+            # Reload Nginx
+            ##############################
             sudo nginx -s reload || true
-          REMOTE
+
+            echo "✅ Deployment completed successfully!"
+          EOF

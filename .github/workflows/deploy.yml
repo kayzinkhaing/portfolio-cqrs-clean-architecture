@@ -3,7 +3,7 @@ name: Deploy Portfolio
 on:
   push:
     branches:
-      - master   # Change if your main branch is different
+      - master  # Change if your main branch is different
 
 jobs:
   deploy:
@@ -32,44 +32,44 @@ jobs:
           ENV_FILE: ${{ secrets.ENV_FILE }}
           ENV_FRONTEND_FILE: ${{ secrets.ENV_FRONTEND_FILE }}
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
             set -euxo pipefail
 
             ##############################
             # Project directories
             ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=$PROJECT_DIR/auth-system
-            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
+            LARAVEL_DIR=\$PROJECT_DIR/auth-system
+            FRONTEND_DIR=\$PROJECT_DIR/vue-auth-system
             BRANCH=master
 
-            # Create project folder if missing
-            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
-            cd "$PROJECT_DIR"
+            # Create project folders if missing
+            mkdir -p "\$LARAVEL_DIR" "\$FRONTEND_DIR"
+            cd "\$PROJECT_DIR"
 
             ##############################
             # Pull or clone repository
             ##############################
             if [ -d .git ]; then
               echo "Pulling latest code..."
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
+              git fetch origin \$BRANCH
+              git reset --hard origin/\$BRANCH
             else
               echo "Cloning repository..."
-              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              git clone -b \$BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             ##############################
-            # Deploy .env files safely (Base64)
+            # Deploy .env files safely
             ##############################
-            echo "$ENV_FILE" | base64 -d > "$LARAVEL_DIR/.env"
-            echo "$ENV_FRONTEND_FILE" | base64 -d > "$FRONTEND_DIR/.env"
-            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
+            echo "\$ENV_FILE" | base64 -d > "\$LARAVEL_DIR/.env"
+            echo "\$ENV_FRONTEND_FILE" | base64 -d > "\$FRONTEND_DIR/.env"
+            chmod 600 "\$LARAVEL_DIR/.env" "\$FRONTEND_DIR/.env"
 
             ##############################
             # Stop existing containers
             ##############################
-            docker compose -f docker-stack/docker-compose.yml down -v --remove-orphans || true
+            docker compose -f docker-stack/docker-compose.yml down --remove-orphans || true
 
             ##############################
             # Build & start containers

@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
 
   return {
+    base: isProduction ? '/portfolio/' : '/',
     plugins: [
       vue(),
       tsconfigPaths(),
@@ -27,9 +28,13 @@ export default defineConfig(({ mode }) => {
 
     server: {
       port: 5173,
-      open: true,
+      host: true, // allow connections from any host
       strictPort: true,
-      hmr: { overlay: true },
+      open: false, // don’t open browser automatically in Docker
+      hmr: {
+        overlay: true,
+      },
+      allowedHosts: ['www.kayzinkhine.com', 'kayzinkhine.com', 'localhost', 'portfolio-vue-1'],
     },
 
     build: {
@@ -50,14 +55,16 @@ export default defineConfig(({ mode }) => {
     define: {
       __DEV__: !isProduction,
       __API_BASE__: JSON.stringify(
-        isProduction ? 'https://api.example.com' : 'http://localhost:8000'
+        isProduction
+          ? 'http://www.kayzinkhine.com'  // production backend
+          : 'http://localhost'            // local backend
       ),
     },
 
     test: {
       globals: true,
       environment: 'jsdom',
-      setupFiles: './tests/setup.ts', // setup for global mocks
+      setupFiles: './tests/setup.ts',
       include: ['src/**/*.{test,spec}.{ts,tsx}'],
       coverage: {
         provider: 'v8',

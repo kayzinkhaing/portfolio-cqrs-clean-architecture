@@ -49,17 +49,17 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ],
         ])
-        ->cookie(
-            'refresh_token',
-            $refreshToken,
-            60 * 24 * 7, // 7 days
-            '/',
-            null,
-            config('app.env') === 'production', // secure only in production
-            true, // HttpOnly
-            false,
-            'Strict'
-        );
+            ->cookie(
+                'refresh_token',
+                $refreshToken,
+                60 * 24 * 7,
+                '/',
+                config('session.domain'),
+                false,       // secure = false for HTTP
+                true,
+                false,
+                'Lax'        // instead of None
+            );
     }
 
     // -------------------------
@@ -83,17 +83,17 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ],
         ])
-        ->cookie(
-            'refresh_token',
-            $refreshToken,
-            60 * 24 * 7, // 7 days
-            '/',
-            null,
-            config('app.env') === 'production',
-            true, // HttpOnly
-            false,
-            'Strict'
-        );
+            ->cookie(
+                'refresh_token',
+                $refreshToken,
+                60 * 24 * 7,
+                '/',
+                config('session.domain'),
+                false,
+                true,
+                false,
+                'Lax'        // instead of None
+            );
     }
 
     // -------------------------

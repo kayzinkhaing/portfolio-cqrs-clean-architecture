@@ -37,7 +37,7 @@ class SyncToReadModelJob implements ShouldQueue
     {
         try {
             $mongo = MongoService::getClient();
-            $db = $mongo->selectDatabase('read_model');
+            $db = $mongo->selectDatabase(databaseName: 'read_model');
 
             $collectionName = Str::plural(Str::snake(class_basename($this->modelClass)));
             $collection = $db->selectCollection($collectionName);

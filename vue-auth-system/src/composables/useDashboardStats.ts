@@ -18,14 +18,14 @@ export const useDashboardStats = () => {
   const quickStats = computed<StatItem[]>(() => [
     { 
       title: 'Projects', 
-      value: '24', 
+      value: '6', 
       change: '+3 this month',
       icon: CodeBracketIcon,
       color: 'from-blue-500 to-blue-600'
     },
     { 
       title: 'Experience', 
-      value: '5+', 
+      value: '4+', 
       change: 'Years',
       icon: BriefcaseIcon,
       color: 'from-purple-500 to-purple-600'

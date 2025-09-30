@@ -6,7 +6,7 @@
       <!-- Left: Profile Image -->
       <div class="relative mb-8 md:mb-0 md:w-1/2 flex justify-center p-0 m-0">
         <div class="w-90 h-90 rounded-full overflow-hidden border-4 border-indigo-500/30 shadow-2xl animate-float">
-          <img src="@/assets/images/profile1.png" alt="Profile Image" class="w-full h-full object-cover">
+          <img src="@/assets/images/profile1.avif" alt="Profile Image" class="w-full h-full object-cover">
         </div>
       </div>
 

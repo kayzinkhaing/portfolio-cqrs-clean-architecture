@@ -6,7 +6,7 @@
     >
       <!-- Manual local image -->
       <!-- <img
-        src="/src/assets/images/profile1.png"
+        src="/src/assets/images/profile1.avif"
         alt="User"
         class="w-9 h-9 rounded-full ring-2 ring-blue-500 object-cover"
       /> -->
@@ -38,7 +38,7 @@
         <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-800 border-b border-gray-200 dark:border-slate-600">
           <div class="flex items-center gap-3">
             <img
-              src="/src/assets/images/profile1.png"
+              src="/src/assets/images/profile1.avif"
               alt="User"
               class="w-12 h-12 rounded-full ring-2 ring-blue-500 object-cover"
             />

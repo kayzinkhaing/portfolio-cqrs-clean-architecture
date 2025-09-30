@@ -41,6 +41,10 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
     },
 
+    setTwoFactorVerified(value: boolean) {
+    this.requires2FA = !value
+  },
+
     setAuthData({ user, access_token }: { user: User; access_token: string }) {
       this.user = user
       this.accessToken = access_token

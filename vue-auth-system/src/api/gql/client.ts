@@ -10,6 +10,7 @@ import { onError } from '@apollo/client/link/error'
 //   uri: '/graphql', // Vite proxy will forward to Laravel
 // })
 
+
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8000/graphql', // Read Model
 })

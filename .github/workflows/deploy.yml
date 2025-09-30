@@ -1,20 +1,20 @@
-name: Deploy Portfolio
+name: Deploy Portfolio (Docker)
 
 on:
   push:
     branches:
-      - master  # Change if your main branch is different
+      - master  # change if your main branch is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout the repo (optional, needed if you want files locally on runner)
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup SSH agent
+      # 2️⃣ Set up SSH key
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -26,8 +26,8 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      # 4️⃣ Deploy via SSH
-      - name: Deploy to DigitalOcean
+      # 4️⃣ Deploy on the server
+      - name: Deploy via SSH (Docker)
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             set -euxo pipefail
@@ -36,12 +36,6 @@ jobs:
             # Project directories
             ##############################
             PROJECT_DIR=/var/www/html/portfolio
-            LARAVEL_DIR=$PROJECT_DIR/auth-system
-            FRONTEND_DIR=$PROJECT_DIR/vue-auth-system
-            BRANCH=master
-
-            # Ensure directories exist
-            mkdir -p "$LARAVEL_DIR" "$FRONTEND_DIR"
             cd "$PROJECT_DIR"
 
             ##############################
@@ -49,52 +43,35 @@ jobs:
             ##############################
             if [ -d .git ]; then
               echo "Pulling latest code..."
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
+              git fetch origin master
+              git reset --hard origin/master
             else
               echo "Cloning repository..."
-              git clone -b $BRANCH git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
+              git clone -b master git@github.com:kayzinkhaing/portfolio-cqrs-clean-architecture.git .
             fi
 
             ##############################
-            # Deploy .env files safely
+            # Deploy .env files
             ##############################
-            echo '${{ secrets.ENV_FILE }}' > "$LARAVEL_DIR/.env"
-            echo '${{ secrets.ENV_FRONTEND_FILE }}' > "$FRONTEND_DIR/.env"
-            chmod 600 "$LARAVEL_DIR/.env" "$FRONTEND_DIR/.env"
+            echo '${{ secrets.ENV_FILE }}' > auth-system/.env
+            echo '${{ secrets.ENV_FRONTEND_FILE }}' > vue-auth-system/.env
+            chmod 600 auth-system/.env vue-auth-system/.env
 
             ##############################
-            # Stop existing containers
+            # Docker: stop, rebuild, and start
             ##############################
-            docker compose -f docker-stack/docker-compose.yml down --remove-orphans || true
-
-            ##############################
-            # Build & start containers
-            ##############################
+            docker compose -f docker-stack/docker-compose.yml down
             docker compose -f docker-stack/docker-compose.yml up -d --build
 
             ##############################
-            # Wait for Laravel container to be ready
+            # Run Laravel migrations
             ##############################
-            until docker compose exec -T laravel php artisan migrate:status >/dev/null 2>&1; do
-              echo "Laravel not ready yet, sleeping 5 seconds..."
-              sleep 5
-            done
+            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan migrate --force
 
             ##############################
-            # Run Laravel Artisan commands
+            # Clear cache & set permissions
             ##############################
-            docker compose exec -T laravel php artisan migrate --force
-            docker compose exec -T laravel php artisan storage:link || true
-            docker compose exec -T laravel php artisan config:clear
-            docker compose exec -T laravel php artisan cache:clear
-            docker compose exec -T laravel php artisan route:clear
-            docker compose exec -T laravel php artisan view:clear
-
-            ##############################
-            # Reload Nginx
-            ##############################
-            sudo nginx -s reload || true
-
-            echo "✅ Deployment completed successfully!"
+            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan config:cache
+            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan route:cache
+            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan view:cache
           EOF

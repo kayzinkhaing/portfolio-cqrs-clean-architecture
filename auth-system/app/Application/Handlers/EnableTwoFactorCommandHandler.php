@@ -5,7 +5,7 @@ namespace App\Application\Handlers;
 use App\Application\Commands\EnableTwoFactorCommand;
 use App\Services\TwoFactorService;
 
-class EnableTwoFactorHandler
+class EnableTwoFactorCommandHandler
 {
     public function __construct(
         protected TwoFactorService $twoFactorService

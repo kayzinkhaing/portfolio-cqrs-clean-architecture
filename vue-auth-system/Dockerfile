@@ -15,4 +15,5 @@ COPY . .
 EXPOSE 5173
 
 # Start Vite dev server, accessible externally
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["node", "-r", "ts-node/register", "./node_modules/vite/bin/vite.js", "--host", "0.0.0.0"]
+

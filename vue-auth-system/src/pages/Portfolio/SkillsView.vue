@@ -116,14 +116,14 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-blue-500 to-cyan-500',
     description: 'Building responsive, interactive user interfaces with modern frameworks and best practices',
     skills: [
-      { name: 'HTML5', level: 95, icon: '🟧', color: 'orange', experience: '3+ years', projects: 15 },
-      { name: 'CSS3', level: 90, icon: '🔵', color: 'blue', experience: '3+ years', projects: 15 },
-      { name: 'JavaScript', level: 85, icon: '🟨', color: 'yellow', experience: '2+ years', projects: 12 },
-      { name: 'TypeScript', level: 80, icon: '🔷', color: 'blue', experience: '1+ years', projects: 8 },
-      { name: 'Vue.js', level: 90, icon: '🟢', color: 'green', experience: '2+ years', projects: 10 },
-      { name: 'React.js', level: 70, icon: '⚛️', color: 'blue', experience: '6+ months', projects: 3 },
-      { name: 'TailwindCSS', level: 90, icon: '🎨', color: 'cyan', experience: '1+ years', projects: 8 },
-      { name: 'Bootstrap', level: 85, icon: '🅱️', color: 'purple', experience: '2+ years', projects: 10 }
+      { name: 'HTML5', level: 95, icon: '🟧', color: 'orange', experience: '3+ years' },
+      { name: 'CSS3', level: 90, icon: '🔵', color: 'blue', experience: '3+ years' },
+      { name: 'JavaScript', level: 85, icon: '🟨', color: 'yellow', experience: '2+ years' },
+      { name: 'TypeScript', level: 80, icon: '🔷', color: 'blue', experience: '1+ years' },
+      { name: 'Vue.js', level: 90, icon: '🟢', color: 'green', experience: '2+ years' },
+      { name: 'React.js', level: 70, icon: '⚛️', color: 'blue', experience: '6+ months' },
+      { name: 'TailwindCSS', level: 90, icon: '🎨', color: 'cyan', experience: '1+ years' },
+      { name: 'Bootstrap', level: 85, icon: '🅱️', color: 'purple', experience: '2+ years' }
     ],
     advancedConcepts: [
       {
@@ -153,14 +153,12 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-green-500 to-emerald-500',
     description: 'Server-side development, APIs, and database management with robust architecture',
     skills: [
-      { name: 'PHP', level: 90, icon: '🐘', color: 'indigo', experience: '3+ years', projects: 12 },
-      { name: 'Laravel', level: 95, icon: '🔴', color: 'red', experience: '2+ years', projects: 10 },
-      { name: 'Node.js', level: 75, icon: '🟢', color: 'green', experience: '1+ years', projects: 5 },
-      { name: 'Express.js', level: 70, icon: '⚡', color: 'gray', experience: '1+ years', projects: 4 },
-      { name: 'RESTful APIs', level: 90, icon: '🔗', color: 'blue', experience: '2+ years', projects: 8 },
-      { name: 'GraphQL', level: 60, icon: '🟣', color: 'pink', experience: '6+ months', projects: 2 },
-      { name: 'Livewire', level: 80, icon: '⚡', color: 'pink', experience: '1+ years', projects: 6 },
-      { name: 'Microservices', level: 65, icon: '🔧', color: 'purple', experience: '6+ months', projects: 2 }
+      { name: 'PHP', level: 90, icon: '🐘', color: 'indigo', experience: '3+ years' },
+      { name: 'Laravel', level: 95, icon: '🔴', color: 'red', experience: '2+ years' },
+      { name: 'RESTful APIs', level: 90, icon: '🔗', color: 'blue', experience: '2+ years' },
+      { name: 'GraphQL', level: 60, icon: '🟣', color: 'pink', experience: '6+ months' },
+      { name: 'Livewire', level: 80, icon: '⚡', color: 'pink', experience: '1+ years' },
+      { name: 'Microservices', level: 65, icon: '🔧', color: 'purple', experience: '6+ months' }
     ],
     advancedConcepts: [
       {
@@ -190,14 +188,14 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-purple-500 to-pink-500',
     description: 'Database design, optimization, and data management across different systems',
     skills: [
-      { name: 'MySQL', level: 85, icon: '🐬', color: 'orange', experience: '3+ years', projects: 12 },
-      { name: 'PostgreSQL', level: 75, icon: '🐘', color: 'blue', experience: '1+ years', projects: 4 },
-      { name: 'MongoDB', level: 70, icon: '🍃', color: 'green', experience: '1+ years', projects: 3 },
-      { name: 'Redis', level: 80, icon: '🔴', color: 'red', experience: '1+ years', projects: 5 },
-      { name: 'Firebase', level: 75, icon: '🔥', color: 'yellow', experience: '1+ years', projects: 4 },
-      { name: 'SQL', level: 90, icon: '📊', color: 'blue', experience: '3+ years', projects: 12 },
-      { name: 'Database Design', level: 85, icon: '🏗️', color: 'purple', experience: '2+ years', projects: 8 },
-      { name: 'Data Modeling', level: 80, icon: '📐', color: 'cyan', experience: '2+ years', projects: 6 }
+      { name: 'MySQL', level: 85, icon: '🐬', color: 'orange', experience: '3+ years' },
+      { name: 'PostgreSQL', level: 75, icon: '🐘', color: 'blue', experience: '1+ years' },
+      { name: 'MongoDB', level: 70, icon: '🍃', color: 'green', experience: '1+ years' },
+      { name: 'Redis', level: 80, icon: '🔴', color: 'red', experience: '1+ years' },
+      { name: 'Firebase', level: 75, icon: '🔥', color: 'yellow', experience: '1+ years' },
+      { name: 'SQL', level: 90, icon: '📊', color: 'blue', experience: '3+ years' },
+      { name: 'Database Design', level: 85, icon: '🏗️', color: 'purple', experience: '2+ years' },
+      { name: 'Data Modeling', level: 80, icon: '📐', color: 'cyan', experience: '2+ years' }
     ]
   },
   {
@@ -207,14 +205,14 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-orange-500 to-red-500',
     description: 'Problem-solving with efficient algorithms and optimal data structure selection',
     skills: [
-      { name: 'Arrays & Strings', level: 90, icon: '📝', color: 'blue', experience: '3+ years', projects: 20 },
-      { name: 'Linked Lists', level: 85, icon: '🔗', color: 'green', experience: '2+ years', projects: 15 },
-      { name: 'Trees & Graphs', level: 80, icon: '🌳', color: 'green', experience: '2+ years', projects: 12 },
-      { name: 'Hash Tables', level: 85, icon: '#️⃣', color: 'purple', experience: '2+ years', projects: 10 },
-      { name: 'Sorting Algorithms', level: 90, icon: '↕️', color: 'orange', experience: '3+ years', projects: 18 },
-      { name: 'Dynamic Programming', level: 75, icon: '🔄', color: 'cyan', experience: '1+ years', projects: 8 },
-      { name: 'Big O Analysis', level: 85, icon: '📈', color: 'red', experience: '2+ years', projects: 15 },
-      { name: 'Problem Solving', level: 90, icon: '🧩', color: 'pink', experience: '3+ years', projects: 25 }
+      { name: 'Arrays & Strings', level: 90, icon: '📝', color: 'blue', experience: '3+ years' },
+      { name: 'Linked Lists', level: 85, icon: '🔗', color: 'green', experience: '2+ years' },
+      { name: 'Trees & Graphs', level: 80, icon: '🌳', color: 'green', experience: '2+ years' },
+      { name: 'Hash Tables', level: 85, icon: '#️⃣', color: 'purple', experience: '2+ years' },
+      { name: 'Sorting Algorithms', level: 90, icon: '↕️', color: 'orange', experience: '3+ years' },
+      { name: 'Dynamic Programming', level: 75, icon: '🔄', color: 'cyan', experience: '1+ years' },
+      { name: 'Big O Analysis', level: 85, icon: '📈', color: 'red', experience: '2+ years' },
+      { name: 'Problem Solving', level: 90, icon: '🧩', color: 'pink', experience: '3+ years' }
     ]
   },
   {
@@ -224,14 +222,13 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-indigo-500 to-blue-500',
     description: 'Infrastructure management, CI/CD pipelines, and deployment automation',
     skills: [
-      { name: 'Git', level: 90, icon: '📚', color: 'orange', experience: '3+ years', projects: 20 },
-      { name: 'GitHub Actions', level: 80, icon: '⚡', color: 'gray', experience: '1+ years', projects: 6 },
-      { name: 'Docker', level: 75, icon: '🐳', color: 'blue', experience: '1+ years', projects: 5 },
-      { name: 'CI/CD', level: 80, icon: '🔄', color: 'green', experience: '1+ years', projects: 6 },
-      { name: 'DigitalOcean', level: 75, icon: '🌊', color: 'blue', experience: '1+ years', projects: 4 },
-      { name: 'Nginx', level: 70, icon: '🟢', color: 'green', experience: '1+ years', projects: 3 },
-      { name: 'Linux', level: 75, icon: '🐧', color: 'gray', experience: '1+ years', projects: 5 },
-      { name: 'AWS', level: 60, icon: '☁️', color: 'orange', experience: '6+ months', projects: 2 }
+      { name: 'Git', level: 90, icon: '📚', color: 'orange', experience: '3+ years' },
+      { name: 'GitHub Actions', level: 80, icon: '⚡', color: 'gray', experience: '1+ years' },
+      { name: 'Docker', level: 75, icon: '🐳', color: 'blue', experience: '1+ years' },
+      { name: 'CI/CD', level: 80, icon: '🔄', color: 'green', experience: '1+ years' },
+      { name: 'DigitalOcean', level: 75, icon: '🌊', color: 'blue', experience: '1+ years' },
+      { name: 'Nginx', level: 70, icon: '🟢', color: 'green', experience: '1+ years' },
+      { name: 'Linux', level: 75, icon: '🐧', color: 'gray', experience: '1+ years' }
     ]
   },
   {
@@ -241,14 +238,14 @@ const skillCategories: SkillCategory[] = [
     gradientClass: 'bg-gradient-to-r from-yellow-500 to-orange-500',
     description: 'Essential tools and utilities that enhance development productivity',
     skills: [
-      { name: 'VS Code', level: 95, icon: '💙', color: 'blue', experience: '3+ years', projects: 25 },
-      { name: 'Postman', level: 85, icon: '📮', color: 'orange', experience: '2+ years', projects: 12 },
-      { name: 'Figma', level: 70, icon: '🎨', color: 'purple', experience: '1+ years', projects: 8 },
-      { name: 'Chrome DevTools', level: 90, icon: '🔍', color: 'blue', experience: '3+ years', projects: 20 },
-      { name: 'Terminal/CLI', level: 85, icon: '⌨️', color: 'gray', experience: '2+ years', projects: 15 },
-      { name: 'NPM/Yarn', level: 85, icon: '📦', color: 'red', experience: '2+ years', projects: 12 },
-      { name: 'Webpack/Vite', level: 80, icon: '⚡', color: 'purple', experience: '1+ years', projects: 8 },
-      { name: 'ESLint/Prettier', level: 85, icon: '✨', color: 'green', experience: '2+ years', projects: 10 }
+      { name: 'VS Code', level: 95, icon: '💙', color: 'blue', experience: '3+ years' },
+      { name: 'Postman', level: 85, icon: '📮', color: 'orange', experience: '2+ years' },
+      { name: 'Figma', level: 70, icon: '🎨', color: 'purple', experience: '1+ years' },
+      { name: 'Chrome DevTools', level: 90, icon: '🔍', color: 'blue', experience: '3+ years'},
+      { name: 'Terminal/CLI', level: 85, icon: '⌨️', color: 'gray', experience: '2+ years' },
+      { name: 'NPM/Yarn', level: 85, icon: '📦', color: 'red', experience: '2+ years' },
+      { name: 'Webpack/Vite', level: 80, icon: '⚡', color: 'purple', experience: '1+ years' },
+      { name: 'ESLint/Prettier', level: 85, icon: '✨', color: 'green', experience: '2+ years' }
     ]
   }
 ]

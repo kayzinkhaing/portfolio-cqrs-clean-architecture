@@ -14,7 +14,7 @@
           <div class="flex items-center mb-4">
             <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-gray-700">
               <img
-                src="@/assets/images/profile1.png"
+                src="@/assets/images/profile1.avif"
                 alt="Kay Zin Khaing"
                 class="w-full h-full object-cover"
                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"

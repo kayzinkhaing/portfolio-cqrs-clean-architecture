@@ -8,7 +8,7 @@ export async function authGuard(
 ) {
   const auth = useAuthStore()
 
-  // Initialize auth if not yet initialized
+  // Wait for auth to initialize (token refresh etc.)
   if (!auth.initialized) {
     try {
       await auth.initialize()
@@ -17,19 +17,19 @@ export async function authGuard(
     }
   }
 
-  // Not logged in → redirect to login
+  // 🚨 If not logged in, redirect to login page
   if (!auth.isAuthenticated) {
     return next({
-      name: 'Login',
+      path: '/home/login',  // ✅ direct path instead of name
       query: { redirect: to.fullPath },
     })
   }
 
-  // Logged in but 2FA required → redirect to /2fa
+  // ✅ If logged in but requires 2FA
   if (auth.requires2FA && to.name !== 'TwoFactor') {
     return next({ name: 'TwoFactor' })
   }
 
-  // Otherwise, allow access
+  // ✅ Otherwise allow access
   next()
 }

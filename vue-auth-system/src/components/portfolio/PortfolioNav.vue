@@ -1,215 +1,210 @@
-<!-- src/components/portfolio/PortfolioNav.vue -->
 <template>
-  <nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <!-- Logo -->
-        <div class="flex-shrink-0">
-          <router-link 
-            to="/portfolio" 
-            class="flex items-center space-x-3 group"
-          >
-            <!-- Profile Image (Optional) -->
-            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-indigo-500/30 group-hover:border-indigo-400/50 transition-colors">
-              <img 
-                src="@/assets/images/profile1.png" 
-                alt="Kay Zin Khaing" 
-                class="w-full h-full object-cover"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-              >
-              <!-- Fallback Avatar -->
-              <div class="w-full h-full bg-gradient-to-br from-pink-900 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                KZ
-              </div>
-            </div>
-            
-            <!-- Name -->
-            <div>
-              <h1 class="text-xl font-bold gradient-text-animated">
-                Kay Zin Khaing
-              </h1>
-              <p class="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                Full-Stack Developer
-              </p>
-            </div>
-          </router-link>
+  <header class="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 backdrop-blur-sm bg-opacity-90">
+    <!-- <nav class="container mx-auto px-4 py-3 flex justify-between items-center" ref="navRef"> -->
+      <nav class="container mx-auto px-8 lg:px-20 xl:px-32 py-3 flex justify-between items-center" ref="navRef">
+      <!-- Logo -->
+      <router-link to="/portfolio" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500/30 group-hover:border-purple-400 transition-all duration-300">
+          <img
+            src="@/assets/images/profile1.avif"
+            alt="Kay Zin Khaing"
+            class="w-full h-full object-cover"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+          />
+          <div class="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 hidden items-center justify-center text-white font-bold text-sm">
+            KZ
+          </div>
         </div>
-        
-        <!-- Desktop Navigation -->
-        <div class="hidden md:flex items-center space-x-1">
-          <router-link 
-            v-for="item in navItems" 
-            :key="item.name"
-            :to="item.path"
-            :class="['nav-link group relative', isActive(item.path) ? 'router-link-active' : '']"
-          >
-            <span class="inline-flex items-center">
-              <component 
-                :is="item.icon" 
-                class="w-4 h-4 mr-2 opacity-70 group-hover:opacity-100 transition-opacity"
-                v-if="item.icon"
-              />
-              {{ item.name }}
-            </span>
-          </router-link>
+        <div>
+          <h1 class="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Kay Zin Khaing
+          </h1>
+          <p class="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
+            Full-Stack Developer
+          </p>
         </div>
-        
-        <!-- Mobile menu button -->
-        <div class="md:hidden">
-          <button
-            @click="toggleMobileMenu"
-            class="btn-ghost p-2"
-            :class="{ 'bg-slate-800/50': isMobileMenuOpen }"
-          >
-            <svg 
-              class="w-6 h-6 transition-transform duration-300"
-              :class="{ 'rotate-90': isMobileMenuOpen }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                v-if="!isMobileMenuOpen"
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-              <path 
-                v-else
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Mobile Navigation Menu -->
-    <transition
-      name="mobile-nav"
-      enter-active-class="transition-all duration-300 ease-out"
-      leave-active-class="transition-all duration-200 ease-in"
-      enter-from-class="opacity-0 transform -translate-y-2"
-      enter-to-class="opacity-100 transform translate-y-0"
-      leave-from-class="opacity-100 transform translate-y-0"
-      leave-to-class="opacity-0 transform -translate-y-2"
-    >
-      <div 
-        v-if="isMobileMenuOpen" 
-        class="md:hidden glass-card border-t border-slate-700/50 mt-1 mx-4 rounded-lg"
-      >
-        <div class="px-2 pt-2 pb-3 space-y-1">
+      </router-link>
+
+      <!-- Desktop Nav -->
+      <ul class="hidden md:flex items-center space-x-6">
+        <li v-for="link in links" :key="link.path">
           <router-link
-            v-for="item in navItems"
-            :key="item.name"
-            :to="item.path"
-            :class="['nav-link group relative', isActive(item.path) ? 'router-link-active' : '']"
-            @click="closeMobileMenu"
+            :to="link.path"
+            :class="[
+              'text-gray-300 hover:text-white transition-colors duration-200 font-medium text-sm relative',
+              isActive(link.path) ? 'text-white' : ''
+            ]"
           >
-            <span class="inline-flex items-center">
-              <component 
-                :is="item.icon" 
-                class="w-4 h-4 mr-2 opacity-70 group-hover:opacity-100 transition-opacity"
-                v-if="item.icon"
-              />
-              {{ item.name }}
-            </span>
+            {{ link.name }}
+            <span 
+              v-if="isActive(link.path)"
+              class="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+            ></span>
           </router-link>
-          
-          <!-- Mobile contact info omitted for brevity -->
+        </li>
+      </ul>
+
+      <!-- Mobile Toggle -->
+      <button 
+        @click.stop="toggleMobileMenu"
+        class="md:hidden relative w-8 h-8 flex flex-col items-center justify-center transition-all duration-300"
+      >
+        <span 
+          class="block w-6 h-0.5 bg-white rounded-full mb-1 transition-all duration-300"
+        ></span>
+        <span 
+          class="block w-6 h-0.5 bg-white rounded-full mb-1 transition-all duration-300"
+        ></span>
+        <span 
+          class="block w-6 h-0.5 bg-white rounded-full transition-all duration-300"
+        ></span>
+      </button>
+
+      <!-- Mobile Menu -->
+      <div
+        v-if="isMobileMenuOpen"
+        class="fixed inset-0 z-40 md:hidden"
+        ref="mobileMenuRef"
+      >
+        <!-- Backdrop -->
+        <div 
+          class="absolute inset-0 bg-black bg-opacity-70 backdrop-blur-sm transition-opacity duration-300"
+          @click="closeMobileMenu"
+        ></div>
+        
+        <!-- Menu Content -->
+        <div class="absolute inset-0 bg-gray-900 transform transition-transform duration-300 ease-out overflow-y-auto">
+          <div class="container mx-auto px-6 py-8">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-12">
+              <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                  KZ
+                </div>
+                <div>
+                  <h2 class="text-white font-bold text-xl">Kay Zin Khaing</h2>
+                  <p class="text-gray-400 text-sm">Full-Stack Developer</p>
+                </div>
+              </div>
+              <button @click="closeMobileMenu" class="text-gray-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Navigation Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+              <router-link
+                v-for="link in links"
+                :key="link.path"
+                :to="link.path"
+                @click="closeMobileMenu"
+                :class="[
+                  'group p-6 rounded-2xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center text-center',
+                  isActive(link.path) 
+                    ? 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/50 shadow-lg' 
+                    : 'bg-gray-800/50 border-gray-700 hover:border-purple-500/30 hover:bg-gray-800'
+                ]"
+              >
+                <div 
+                  class="w-12 h-12 rounded-xl mb-3 flex items-center justify-center transition-all duration-300"
+                  :class="isActive(link.path) 
+                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' 
+                    : 'bg-gray-700 group-hover:bg-purple-500/20 text-gray-300 group-hover:text-white'"
+                >
+                  <span class="font-bold text-lg">{{ getIcon(link.name) }}</span>
+                </div>
+                <span class="font-semibold text-white text-lg mb-1">{{ link.name }}</span>
+                <p class="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
+                  {{ getDescription(link.name) }}
+                </p>
+              </router-link>
+            </div>
+
+          </div>
         </div>
       </div>
-    </transition>
-    
-    <!-- Backdrop for mobile menu -->
-    <div 
-      v-if="isMobileMenuOpen" 
-      @click="closeMobileMenu"
-      class="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden"
-      style="top: 4rem;"
-    ></div>
-  </nav>
+    </nav>
+  </header>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
 
-const router = useRouter()
-const route = useRoute()
-const isMobileMenuOpen = ref(false)
+const route = useRoute();
+const isMobileMenuOpen = ref(false);
+const navRef = ref(null);
+const mobileMenuRef = ref(null);
 
-interface NavItem {
-  name: string
-  path: string
-  icon?: any
-}
+const links = [
+  { name: "Home", path: "/portfolio" },
+  { name: "About", path: "/portfolio/about" },
+  { name: "Skills", path: "/portfolio/skills" },
+  { name: "Education", path: "/portfolio/education" },
+  { name: "Work", path: "/portfolio/work" },
+  { name: "Experience", path: "/portfolio/experience" },
+  { name: "Technologies", path: "/portfolio/site-technologies" },
+  { name: "Hire Me", path: "/portfolio/hire-me" },
+];
 
-const navItems: NavItem[] = [
-  { name: 'Home', path: '/portfolio' },
-  { name: 'About', path: '/portfolio/about' },
-  { name: 'Skills', path: '/portfolio/skills' },
-  { name: 'Education', path: '/portfolio/education' },
-  { name: 'Work', path: '/portfolio/work' },
-  { name: 'Experience', path: '/portfolio/experience' },
-  { name: 'Site Technologies', path: '/portfolio/site-technologies' },
-  { name: 'Hire Me', path: '/portfolio/hire-me' }
-]
+const getIcon = (name) => {
+  const icons = {
+    'Home': '🏠',
+    'About': '👤',
+    'Skills': '⚡',
+    'Education': '🎓',
+    'Work': '💼',
+    'Experience': '🚀',
+    'Technologies': '🛠️',
+    'Hire Me': '💝'
+  };
+  return icons[name] || '📄';
+};
+
+const getDescription = (name) => {
+  const descriptions = {
+    'Home': 'Welcome page',
+    'About': 'My background',
+    'Skills': 'Technical abilities',
+    'Education': 'Academic journey',
+    'Work': 'Projects & portfolio',
+    'Experience': 'Career timeline',
+    'Technologies': 'Tools & stack',
+    'Hire Me': 'Ready to work together?'
+  };
+  return descriptions[name] || 'Learn more';
+};
 
 const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
 
 const closeMobileMenu = () => {
-  isMobileMenuOpen.value = false
-}
+  isMobileMenuOpen.value = false;
+};
 
-// Exact match for active link
-const isActive = (path: string) => route.path === path
+const handleClickOutside = (event) => {
+  if (
+    navRef.value &&
+    !navRef.value.contains(event.target) &&
+    mobileMenuRef.value &&
+    !mobileMenuRef.value.contains(event.target)
+  ) {
+    closeMobileMenu();
+  }
+};
 
-// Close mobile menu on route change
-router.beforeEach(() => {
-  closeMobileMenu()
-})
-
-const handleClickOutside = (event: Event) => {
-  const target = event.target as HTMLElement
-  if (!target.closest('nav') && isMobileMenuOpen.value) closeMobileMenu()
-}
-
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && isMobileMenuOpen.value) closeMobileMenu()
-}
+const isActive = (path) => {
+  return route.path === path;
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-  document.addEventListener('keydown', handleKeyDown)
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-  document.removeEventListener('keydown', handleKeyDown)
-})
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
-
-<style scoped>
-.router-link-active {
-  @apply text-indigo-400 bg-opacity-20;
-}
-
-.glass-nav { position: relative; z-index: 1000; }
-
-.mobile-nav-enter-active,
-.mobile-nav-leave-active { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-.mobile-nav-enter-from,
-.mobile-nav-leave-to { opacity: 0; transform: translateY(-10px) scale(0.95); }
-
-.group:hover .gradient-text-animated {
-  background-size: 200% 200%;
-  animation: gradient-shift 2s ease infinite;
-}
-</style>

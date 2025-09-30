@@ -3,14 +3,14 @@ name: Deploy Portfolio (Docker)
 on:
   push:
     branches:
-      - master  # change if your main branch is different
+      - master  # adjust if your main branch is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repo (optional, needed if you want files locally on runner)
+      # 1️⃣ Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -58,21 +58,36 @@ jobs:
             chmod 600 auth-system/.env vue-auth-system/.env
 
             ##############################
+            # Ensure external proxy network exists
+            ##############################
+            docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
+
+            ##############################
             # Docker: stop, rebuild, and start
             ##############################
-            docker compose -f docker-stack/docker-compose.yml down
-            docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
-            docker compose -f docker-stack/docker-compose.yml up -d
+            docker compose -p portfolio -f docker-stack/docker-compose.yml down
+            docker compose -p portfolio -f docker-stack/docker-compose.yml up -d --build
+
+            ##############################
+            # Wait for essential containers to be healthy
+            ##############################
+            for service in mongo rabbitmq mysql; do
+              echo "Waiting for $service to be healthy..."
+              until [ "$(docker inspect -f '{{.State.Health.Status}}' portfolio-$service-1 2>/dev/null || echo unhealthy)" == "healthy" ]; do
+                sleep 5
+              done
+            done
 
             ##############################
             # Run Laravel migrations
             ##############################
-            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan migrate --force
+            docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan migrate --force
 
             ##############################
             # Clear cache & set permissions
             ##############################
-            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan config:cache
-            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan route:cache
-            docker compose -f docker-stack/docker-compose.yml exec -T laravel php artisan view:cache
+            docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan config:cache
+            docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan route:cache
+            docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan view:cache
+
           EOF

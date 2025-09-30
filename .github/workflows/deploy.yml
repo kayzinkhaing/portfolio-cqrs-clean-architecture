@@ -61,7 +61,7 @@ jobs:
             # Docker: stop, rebuild, and start
             ##############################
             docker compose -f docker-stack/docker-compose.yml down
-            docker network create portfolio_appnet || true
+            docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
             docker compose -f docker-stack/docker-compose.yml up -d
 
             ##############################

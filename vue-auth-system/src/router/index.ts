@@ -211,13 +211,16 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMetaWithMiddleware }> = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL || '/'),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return { top: 0 }
-    }
-  }
+  scrollBehavior() {
+    // ✅ Prevent forced reflow by avoiding geometry reads
+    // No savedPosition or DOM measurement
+    return new Promise((resolve) => {
+      // Defer scroll until after next frame
+      requestAnimationFrame(() => {
+        resolve({ left: 0, top: 0 })
+      })
+    })
+  },
 })
 
 // Global navigation guard

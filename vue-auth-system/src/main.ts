@@ -6,22 +6,19 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 import { initTabWatcher } from '@/utils/tabWatcher'
 import './assets/main.css'
 
-// ✅ Import toast plugin
+// Toast plugin (can be lazy-loaded as component)
 import Toast from "vue-toastification"
 import "vue-toastification/dist/index.css"
 
-// ✅ Import Apollo Client
+// Apollo client
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core'
 import { DefaultApolloClient } from '@vue/apollo-composable'
 
-// ✅ Import Echo plugin
-import '@/plugins/echo'  // <-- ADD THIS LINE
+// Echo plugin (must be imported normally)
+import '@/plugins/echo'
 
-// Apollo client instance
 export const apolloClient = new ApolloClient({
-  link: new HttpLink({
-    uri: import.meta.env.VITE_GRAPHQL_URL,
-  }),
+  link: new HttpLink({ uri: import.meta.env.VITE_GRAPHQL_URL }),
   cache: new InMemoryCache(),
 })
 
@@ -31,7 +28,7 @@ app.use(createPinia())
 app.use(router)
 app.use(VueQueryPlugin)
 
-// ✅ Toast options
+// Toast
 const options = {
   position: "top-right",
   timeout: 3000,
@@ -40,9 +37,10 @@ const options = {
   draggable: true,
 }
 
+// Echo plugin
 app.use(Toast, options)
 
-// Initialize tab watcher globally
+// Tab watcher
 initTabWatcher()
 
 app.mount('#app')

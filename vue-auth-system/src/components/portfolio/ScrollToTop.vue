@@ -21,38 +21,22 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const isVisible = ref(false)
 
-// Throttle function to reduce scroll checks
-const throttle = (fn: Function, limit = 100) => {
-  let waiting = false
-  return (...args: any[]) => {
-    if (!waiting) {
-      fn(...args)
-      waiting = true
-      setTimeout(() => (waiting = false), limit)
-    }
-  }
-}
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      isVisible.value = !entry.isIntersecting
+    },
+    { root: null, threshold: 0, rootMargin: '-300px 0px 0px 0px' }
+  )
 
-// Scroll check, only updates reactive value if changed
-const checkScroll = () => {
-  const visible = window.scrollY > 300
-  if (visible !== isVisible.value) isVisible.value = visible
-}
+  observer.observe(document.body) // observe top of page
 
-const checkScrollThrottled = throttle(checkScroll, 100)
+  onUnmounted(() => observer.disconnect())
+})
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
-
-onMounted(() => {
-  window.addEventListener('scroll', checkScrollThrottled)
-  checkScrollThrottled()
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', checkScrollThrottled)
-})
 </script>
 
 <style scoped>

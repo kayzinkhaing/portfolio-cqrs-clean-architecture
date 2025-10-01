@@ -13,12 +13,22 @@
         <div class="lg:col-span-2">
           <div class="flex items-center mb-4">
             <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-gray-700">
-              <img
+              <!-- <img
                 src="@/assets/images/profile1.avif"
+                loading="lazy"
                 alt="Kay Zin Khaing"
                 class="w-full h-full object-cover"
                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-              />
+              /> -->
+              <img
+              src="/images/profile1.avif"
+              alt="Kay Zin Khaing"
+              width="80"
+              height="80"
+              loading="eager"
+              decoding="async"
+              class="w-12 h-12 rounded-full ring-2 ring-blue-500 object-cover"
+            />
               <div class="w-full h-full bg-indigo-600 flex items-center justify-center text-white font-bold">
                 KZ
               </div>

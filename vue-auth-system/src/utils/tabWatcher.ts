@@ -1,8 +1,8 @@
 // src/utils/tabWatcher.ts
 export function initTabWatcher() {
   const originalTitle = 'Portfolio | Kay Zin Khaing'
-  const originalFavicon = '/profile1.avif'
-  const hiddenFavicon = '/favhand.png'
+  const originalFavicon = '/images/profile1.avif'
+  const hiddenFavicon = '/favhand.avif'
 
   const changeFavicon = (href: string) => {
     let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']")

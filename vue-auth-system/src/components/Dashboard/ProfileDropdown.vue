@@ -12,10 +12,10 @@
       /> -->
       <div class="text-left hidden lg:block">
         <div class="text-sm font-semibold text-gray-900 dark:text-white">
-          {{ auth.user?.name || 'Guest User' }}
+          {{ auth.user?.name || "Guest User" }}
         </div>
         <div class="text-xs text-gray-600 dark:text-slate-400">
-          {{ auth.user?.role || 'Admin' }}
+          {{ auth.user?.role || "Admin" }}
         </div>
       </div>
       <ChevronDownIcon class="w-4 h-4 text-gray-400" />
@@ -35,19 +35,31 @@
         class="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-30"
       >
         <!-- User Info -->
-        <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-800 border-b border-gray-200 dark:border-slate-600">
+        <div
+          class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-800 border-b border-gray-200 dark:border-slate-600"
+        >
           <div class="flex items-center gap-3">
-            <img
+            <!-- <img
               src="/src/assets/images/profile1.avif"
+              loading="lazy"
               alt="User"
+              class="w-12 h-12 rounded-full ring-2 ring-blue-500 object-cover"
+            /> -->
+            <img
+              src="/images/profile1.avif"
+              alt="Kay Zin Khaing"
+              width="80"
+              height="80"
+              loading="eager"
+              decoding="async"
               class="w-12 h-12 rounded-full ring-2 ring-blue-500 object-cover"
             />
             <div>
               <div class="font-semibold text-gray-900 dark:text-white">
-                {{ auth.user?.name || 'Guest User' }}
+                {{ auth.user?.name || "Guest User" }}
               </div>
               <div class="text-xs text-gray-600 dark:text-slate-400">
-                {{ auth.user?.email || 'No email' }}
+                {{ auth.user?.email || "No email" }}
               </div>
             </div>
           </div>
@@ -87,17 +99,24 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDownIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/vue/24/outline'
-import { useAuthStore } from '../../stores/auth'
+import {
+  ChevronDownIcon,
+  UserIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/vue/24/outline";
+import { useAuthStore } from "../../stores/auth";
 
-interface Props { show: boolean }
-defineProps<Props>()
+interface Props {
+  show: boolean;
+}
+defineProps<Props>();
 
-const emit = defineEmits<{ toggle: []; logout: [] }>()
-const auth = useAuthStore()
+const emit = defineEmits<{ toggle: []; logout: [] }>();
+const auth = useAuthStore();
 
 const handleLogout = () => {
-  emit('toggle')
-  emit('logout')
-}
+  emit("toggle");
+  emit("logout");
+};
 </script>

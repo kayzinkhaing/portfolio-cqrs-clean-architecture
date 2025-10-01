@@ -4,7 +4,7 @@ import { getUsers } from '@/api/queries/userQuery'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref({
-    name: 'Loading...',
+    name: 'Kay Zin Khaing',
     email: '',
     township: { name: 'Myanmar' },
     ward: { name: '', township_id: '' }

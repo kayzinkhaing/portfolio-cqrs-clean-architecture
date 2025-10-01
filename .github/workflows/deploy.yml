@@ -63,24 +63,17 @@ jobs:
             docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 
             ##############################
-            # Check if Docker files changed
+            # Docker: stop, rebuild, and start
             ##############################
-            CHANGED_FILES=\$(git diff --name-only HEAD~1 HEAD || true)
-            if echo "\$CHANGED_FILES" | grep -qE '(docker-stack/|Dockerfile)'; then
-              echo "Docker-related files changed → rebuilding..."
-              docker compose -p portfolio -f docker-stack/docker-compose.yml down
-              docker compose -p portfolio -f docker-stack/docker-compose.yml up -d --build
-            else
-              echo "No Docker changes → starting containers without rebuild..."
-              docker compose -p portfolio -f docker-stack/docker-compose.yml up -d
-            fi
+            docker compose -p portfolio -f docker-stack/docker-compose.yml down
+            docker compose -p portfolio -f docker-stack/docker-compose.yml up -d --build
 
             ##############################
             # Wait for essential containers to be healthy
             ##############################
             for service in mongo rabbitmq mysql; do
-              echo "Waiting for \$service to be healthy..."
-              until [ "\$(docker inspect -f '{{.State.Health.Status}}' portfolio-\$service-1 2>/dev/null || echo unhealthy)" == "healthy" ]; do
+              echo "Waiting for $service to be healthy..."
+              until [ "$(docker inspect -f '{{.State.Health.Status}}' portfolio-$service-1 2>/dev/null || echo unhealthy)" == "healthy" ]; do
                 sleep 5
               done
             done

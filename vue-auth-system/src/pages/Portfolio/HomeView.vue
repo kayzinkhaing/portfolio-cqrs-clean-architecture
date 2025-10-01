@@ -6,15 +6,13 @@
       <!-- Left: Profile Image -->
       <div class="relative mb-8 md:mb-0 md:w-1/2 flex justify-center p-0 m-0">
         <div class="w-90 h-90 rounded-full overflow-hidden border-4 border-indigo-500/30 shadow-2xl animate-float">
-          <!-- <img src="@/assets/images/profile1.avif" loading="lazy" alt="Profile Image" class="w-full h-full object-cover"> -->
            <img
               src="/images/profile1.avif"
               alt="Kay Zin Khaing"
-              width="80"
-              height="80"
-              loading="eager"
+              width="400"
+              height="400"
+              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover"
             />
         </div>
       </div>

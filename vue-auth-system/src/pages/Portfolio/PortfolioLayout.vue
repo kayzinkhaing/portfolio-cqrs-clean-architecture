@@ -1,33 +1,31 @@
-<!-- src/pages/Portfolio/PortfolioLayout.vue -->
 <template>
-     <div class="min-h-screen bg-gray-900">
+  <div class="min-h-screen bg-gray-900 relative">
 
     <!-- Animated Background -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <!-- Gradient Background -->
       <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
       
-      <!-- Animated Particles (Optional) -->
+      <!-- Particles -->
       <div class="particles-bg">
-        <div 
-          v-for="i in 50" 
+        <div
+          v-for="i in 50"
           :key="i"
           class="particle"
           :style="getParticleStyle(i)"
         ></div>
       </div>
-      
+
       <!-- Gradient Overlays -->
       <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-pink-500/10 to-indigo-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: -2s;"></div>
     </div>
-    
+
     <!-- Navigation -->
     <PortfolioNav />
-    
+
     <!-- Main Content -->
-    <main class="relative z-10 ">
-      <!-- Page Transitions -->
+    <main class="relative z-10">
       <router-view v-slot="{ Component, route }">
         <transition
           name="page"
@@ -43,16 +41,16 @@
         </transition>
       </router-view>
     </main>
-    
+
     <!-- Footer -->
     <PortfolioFooter />
-    
-    <!-- Scroll to Top Button -->
+
+    <!-- Scroll to Top -->
     <ScrollToTop />
-    
-    <!-- Loading Overlay (if needed) -->
-    <div 
-      v-if="isLoading" 
+
+    <!-- Loading Overlay -->
+    <div
+      v-if="isLoading"
       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm"
     >
       <div class="text-center">
@@ -79,7 +77,7 @@ const getParticleStyle = (index: number) => {
   const left = Math.random() * 100
   const animationDuration = Math.random() * 10 + 10
   const animationDelay = Math.random() * 10
-  
+
   return {
     width: `${size}px`,
     height: `${size}px`,
@@ -87,57 +85,40 @@ const getParticleStyle = (index: number) => {
     top: `${Math.random() * 100}%`,
     animationDuration: `${animationDuration}s`,
     animationDelay: `${animationDelay}s`,
-    opacity: Math.random() * 0.5 + 0.2
+    opacity: Math.random() * 0.5 + 0.2,
   }
 }
 
-// Loading state management
+// Loading state
 const handleRouteChange = () => {
   isLoading.value = true
-  setTimeout(() => {
-    isLoading.value = false
-  }, 500)
+  setTimeout(() => (isLoading.value = false), 500)
 }
 
-// Set page title based on route
+// Page title
 const updatePageTitle = (to: any) => {
   const baseTitle = 'Kay Zin Khaing - Full Stack Developer'
   document.title = to.meta?.title || baseTitle
 }
 
 onMounted(() => {
-  // Handle route changes
   router.beforeEach((to) => {
     updatePageTitle(to)
     handleRouteChange()
   })
-  
-  // Set initial title
   updatePageTitle(router.currentRoute.value)
-})
-
-// Cleanup
-onUnmounted(() => {
-  // Any cleanup if needed
 })
 </script>
 
 <style scoped>
-/* Page transition styles */
+/* Page transitions */
 .page-enter-active,
 .page-leave-active {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(30px) scale(0.95);
-}
-
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-30px) scale(1.05);
-}
+.page-enter-from { opacity: 0; transform: translateY(30px) scale(0.95); }
+.page-leave-to { opacity: 0; transform: translateY(-30px) scale(1.05); }
 
 /* Particle styles */
 .particle {
@@ -148,18 +129,12 @@ onUnmounted(() => {
 }
 
 @keyframes float {
-  0% {
-    transform: translateY(100vh) rotate(0deg);
-  }
-  100% {
-    transform: translateY(-100px) rotate(360deg);
-  }
+  0% { transform: translateY(100vh) rotate(0deg); }
+  100% { transform: translateY(-100px) rotate(360deg); }
 }
 
-/* Responsive adjustments */
+/* Hide particles on mobile */
 @media (max-width: 768px) {
-  .particles-bg {
-    display: none; /* Hide particles on mobile for performance */
-  }
+  .particles-bg { display: none; }
 }
 </style>

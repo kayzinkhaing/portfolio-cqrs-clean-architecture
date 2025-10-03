@@ -1,33 +1,26 @@
 <template>
   <button
     :class="[
-      'group flex items-center gap-4 w-full px-4 py-3 rounded-xl',
-      'transition-all duration-300 text-left',
-      isActive
-        ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg transform scale-105'
-        : 'text-slate-300 hover:bg-slate-700/50 hover:text-blue-400'
+      'group w-full flex items-center gap-3 rounded-xl transition-all duration-300',
+      'hover:scale-[1.02] active:scale-[0.98]',
+      isCollapsed ? 'justify-center px-3 py-4' : 'justify-start px-4 py-3'
     ]"
     :style="{ animationDelay: `${animationDelay}ms` }"
     @click="$emit('click')"
   >
-    <component
-      :is="item.icon"
+    <component 
+      :is="item.icon" 
       :class="[
-        'w-5 h-5 transition-all duration-300',
+        'transition-all duration-300',
+        isCollapsed ? 'w-7 h-7' : 'w-5 h-5',
         isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-400'
       ]"
     />
     <span 
-      v-if="!isCollapsed" 
-      class="font-medium transition-all duration-300"
+      v-if="!isCollapsed"
+      class="font-medium text-sm"
     >
       {{ item.name }}
-    </span>
-    <span
-      v-if="item.badge && !isCollapsed"
-      class="ml-auto px-2 py-1 text-xs bg-red-500 text-white rounded-full"
-    >
-      {{ item.badge }}
     </span>
   </button>
 </template>
@@ -43,7 +36,6 @@ interface Props {
 }
 
 defineProps<Props>()
-
 defineEmits<{
   click: []
 }>()

@@ -4,7 +4,7 @@ namespace App\Application\Handlers;
 use App\Application\Commands\CreateWardCommand;
 use App\Services\WardService;
 
-class CreateWardHandler
+class CreateWardCommandHandler
 {
     protected WardService $service;
 

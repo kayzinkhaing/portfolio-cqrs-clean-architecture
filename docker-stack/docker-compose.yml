@@ -63,18 +63,18 @@ services:
   # -----------------------
   # Nginx
   # -----------------------
-    # nginx:
-    #   image: nginx:alpine
-    #   restart: always
-    #   volumes:
-    #     - ../auth-system:/var/www/html/portfolio/auth-system:cached
-    #     - ./nginx/sites-available/kayzinkhine.com.conf:/etc/nginx/conf.d/kayzinkhine.com.conf:ro
-    #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    #   depends_on:
-    #     - laravel
-    #   networks:
-    #     - appnet
-    #     - proxy
+  # nginx:
+  #   image: nginx:alpine
+  #   restart: always
+  #   volumes:
+  #     - ../auth-system:/var/www/html/portfolio/auth-system:cached
+  #     - ./nginx/sites-available/kayzinkhine.com.conf:/etc/nginx/conf.d/kayzinkhine.com.conf:ro
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - laravel
+  #   networks:
+  #     - appnet
+  #     - proxy
   vue:
     build:
       context: ../vue-auth-system
@@ -121,6 +121,9 @@ services:
     image: mongo:6
     ports:
       - "27017:27017"
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: admin
+    #   MONGO_INITDB_ROOT_PASSWORD: StrongPassword123
     volumes:
       - portfolio_mongo_data:/data/db
     networks:

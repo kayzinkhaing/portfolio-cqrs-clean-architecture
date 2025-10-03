@@ -1,25 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <!-- Preload main JS bundle -->
-    <link rel="modulepreload" href="/src/main.ts" />
-    <link
-      rel="preload"
-      href="/images/profile1.avif"
-      type="image/avif"
-    />
-    <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portfolio | Kay Zin Khaing</title>
-  </head>
-<style>
-  @font-face {
-    font-family: 'Inter';
-    src: url('/fonts/inter.woff2') format('woff2');
-    font-display: swap;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio | Kay Zin Khaing</title>
+
+  <link
+    rel="preload"
+    as="image"
+    href="/images/profile1.avif"
+    type="image/avif"
+    fetchpriority="high"
+  />
+</head>
 
   <body>
     <div id="app"></div>

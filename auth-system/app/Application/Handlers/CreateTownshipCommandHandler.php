@@ -4,7 +4,7 @@ namespace App\Application\Handlers;
 use App\Application\Commands\CreateTownshipCommand;
 use App\Services\TownshipService;
 
-class CreateTownshipHandler
+class CreateTownshipCommandHandler
 {
     protected TownshipService $service;
 

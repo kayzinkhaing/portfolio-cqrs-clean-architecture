@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => {
 
     build: {
       target: 'esnext',
+      minify: 'esbuild',  // fast minification
+      cssCodeSplit: true, // splits CSS per chunk
       outDir: 'dist',
       sourcemap: !isProduction,
       rollupOptions: {

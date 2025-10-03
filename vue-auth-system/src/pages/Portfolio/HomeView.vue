@@ -16,8 +16,8 @@
             width="400"
             height="400"
             loading="lazy"
-            decoding="async"
             class=""
+            decoding="async"
           />
         </div>
       </div>

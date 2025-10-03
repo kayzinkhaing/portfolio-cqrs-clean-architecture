@@ -3,7 +3,7 @@
     class="p-2 rounded-xl hover:bg-slate-700 transition-all duration-300 group"
     @click="$emit('click')"
   >
-    <Bars3Icon class="w-6 h-6 text-slate-300 group-hover:text-white transition-colors" />
+    <Bars3Icon class="w-7 h-7 text-blue-500 group-hover:text-white transition-colors" />
   </button>
 </template>
 

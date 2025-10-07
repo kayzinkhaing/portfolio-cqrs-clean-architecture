@@ -32,7 +32,7 @@
             :key="idx"
             :src="img"
             class="w-full h-40 object-cover rounded-lg"
-            loading="lazy"
+            loading="eager"
           />
         </div>
 

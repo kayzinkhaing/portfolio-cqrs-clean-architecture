@@ -28,54 +28,38 @@ export default defineConfig(({ mode }) => {
 
     server: {
       port: 5173,
-      host: true, // allow connections from any host
+      host: true,
       strictPort: true,
-      open: false, // don’t open browser automatically in Docker
-      hmr: {
-        overlay: true,
-      },
+      hmr: { overlay: true },
       allowedHosts: ['www.kayzinkhine.com', 'kayzinkhine.com', 'localhost', 'portfolio-vue-1'],
     },
 
     build: {
-      target: 'esnext',
-      minify: 'esbuild',  // fast minification
-      cssCodeSplit: true, // splits CSS per chunk
-      outDir: 'dist',
-      sourcemap: !isProduction,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) return 'vendor'
-            if (id.includes('/api/commands/')) return 'commands'
-            if (id.includes('/api/queries/')) return 'queries'
-          },
-        },
-      },
-    },
+  target: 'esnext',
+  minify: 'esbuild',       // already fast
+  cssCodeSplit: true,      // split CSS
+  rollupOptions: {
+    output: {
+      manualChunks(id) {
+        if (id.includes('node_modules')) return 'vendor'
+        if (id.includes('vue-router')) return 'vue-router'
+        if (id.includes('pinia')) return 'pinia'
+        if (id.includes('@apollo')) return 'apollo'
+        if (id.includes('/pages/Portfolio/')) return 'portfolio'
+        if (id.includes('/pages/Dashboard/')) return 'dashboard'
+      }
+    }
+  }
+}
+,
 
     define: {
       __DEV__: !isProduction,
       __API_BASE__: JSON.stringify(
         isProduction
-          ? 'http://www.kayzinkhine.com'  // production backend
-          : 'http://localhost'            // local backend
+          ? 'https://www.kayzinkhine.com'
+          : 'http://localhost'
       ),
-    },
-
-    test: {
-      globals: true,
-      environment: 'jsdom',
-      setupFiles: './tests/setup.ts',
-      include: ['src/**/*.{test,spec}.{ts,tsx}'],
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'html', 'lcov'],
-        reportsDirectory: './coverage',
-        all: true,
-        include: ['src/**/*.{ts,vue}'],
-        exclude: ['src/main.ts', '**/__tests__/**'],
-      },
     },
   }
 })

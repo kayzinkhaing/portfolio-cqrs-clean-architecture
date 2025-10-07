@@ -10,15 +10,7 @@
           class="w-90 h-90 rounded-full overflow-hidden border-4 border-indigo-500/30 shadow-2xl"
           style="aspect-ratio: 1/1"
         >
-          <img
-            src="/images/profile1.avif"
-            alt="Kay Zin Khaing"
-            width="400"
-            height="400"
-            loading="lazy"
-            class=""
-            decoding="async"
-          />
+        <img src="/images/profile1.avif" width="400" height="400" loading="eager" decoding="async" fetchpriority="high" />
         </div>
       </div>
 

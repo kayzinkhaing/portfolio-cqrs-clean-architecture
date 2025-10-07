@@ -8,7 +8,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-// No props needed for this simple spinner
-</script>

@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-900 relative">
-
     <!-- Static Gradient Background -->
     <div class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-0"></div>
 
@@ -40,31 +39,21 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
 
-// Lazy-loaded components
 const PortfolioNav = defineAsyncComponent(() => import('@/components/portfolio/PortfolioNav.vue'))
 const PortfolioFooter = defineAsyncComponent(() => import('@/components/portfolio/PortfolioFooter.vue'))
 const ScrollToTop = defineAsyncComponent(() => import('@/components/portfolio/ScrollToTop.vue'))
 </script>
 
 <style scoped>
-/* Fade transition for pages */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* Slow pulse animation for gradient overlays */
 @keyframes pulse-slow {
   0%, 100% { opacity: 0.15; transform: scale(1); }
   50% { opacity: 0.25; transform: scale(1.05); }
 }
-.animate-pulse-slow {
-  animation: pulse-slow 10s ease-in-out infinite;
-}
+.animate-pulse-slow { animation: pulse-slow 10s ease-in-out infinite; }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .absolute.w-96.h-96 { display: none; }
 }

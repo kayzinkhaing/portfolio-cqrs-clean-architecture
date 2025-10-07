@@ -90,4 +90,10 @@ jobs:
             docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan route:cache
             docker compose -p portfolio -f docker-stack/docker-compose.yml exec -T laravel php artisan view:cache
 
+            ##############################
+            # Reload NGINX reverse proxy
+            ##############################
+            cd /var/www/html/reverse-proxy
+            docker compose exec reverse-proxy nginx -s reload
+
           EOF

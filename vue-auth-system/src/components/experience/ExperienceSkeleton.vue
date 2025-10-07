@@ -1,23 +1,21 @@
 <template>
-  <div class="animate-pulse flex space-x-4">
-    <!-- Dot on timeline -->
-    <div class="hidden md:block w-4 h-4 rounded-full bg-gray-700 mt-1.5"></div>
-
-    <!-- Card skeleton -->
-    <div class="flex-1 space-y-4 py-4">
-      <div class="h-6 bg-gray-700 rounded w-1/3"></div>
-      <div class="h-4 bg-gray-600 rounded w-1/2"></div>
-      <div class="h-4 bg-gray-600 rounded w-full"></div>
-      <div class="h-4 bg-gray-600 rounded w-5/6"></div>
-      <div class="h-4 bg-gray-600 rounded w-2/3"></div>
+  <div class="animate-pulse bg-slate-800/40 backdrop-blur border border-slate-700/50 rounded-2xl p-8">
+    <div class="h-6 bg-slate-700 rounded w-32 mb-6"></div>
+    <div class="space-y-3 mb-6">
+      <div class="h-8 bg-slate-700 rounded w-3/4"></div>
+      <div class="h-5 bg-slate-700 rounded w-1/2"></div>
+      <div class="h-5 bg-slate-700 rounded w-2/3"></div>
+    </div>
+    <div class="h-5 bg-slate-700 rounded w-40 mb-6"></div>
+    <div class="h-px bg-slate-700 mb-6"></div>
+    <div class="space-y-3">
+      <div class="h-4 bg-slate-700 rounded w-full"></div>
+      <div class="h-4 bg-slate-700 rounded w-5/6"></div>
+      <div class="h-4 bg-slate-700 rounded w-4/5"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No script needed since this is purely presentational
+// Skeleton component
 </script>
-
-<style scoped>
-/* Optional: customize pulse animation if needed */
-</style>
